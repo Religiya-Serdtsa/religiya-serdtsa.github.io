@@ -3,10 +3,20 @@ CC ?= gcc
 STATIC_GENERATOR := bin/bloggen
 STATIC_SRCS := \
 	tools/generate_static.c \
+	lib/cwist/src/sys/err/error.c \
+	lib/cwist/src/core/sstring/sstring.c \
+	blog/wasm/cwist_alloc_stub.c \
+	lib/cwist/lib/cjson/cJSON.c \
 	lib/md4c/src/md4c.c \
 	lib/md4c/src/md4c-html.c \
 	lib/md4c/src/entity.c
-STATIC_INCLUDES := -Ilib/md4c/src
+
+# cwist include paths: real cjson must be found before the wasm stub dir
+STATIC_INCLUDES := \
+	-Ilib/cwist/include \
+	-Ilib/cwist/lib \
+	-Iblog/wasm/stubs \
+	-Ilib/md4c/src
 
 .PHONY: static-site clean
 

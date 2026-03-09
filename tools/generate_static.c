@@ -9,18 +9,15 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include <ctype.h>
 
+#include <cwist/core/sstring/sstring.h>
 #include <md4c-html.h>
 
-#define PATH_MAX_LEN 4096
+#define PATH_MAX_LEN    4096
+#define MAX_EXCERPT_LEN 200
 
-typedef struct {
-    char *data;
-    size_t len;
-    size_t cap;
-} sbuf_t;
+/* ── Data model ─────────────────────────────────────────────────────────── */
 
 typedef struct {
     char *slug;
@@ -49,79 +46,7 @@ typedef struct {
     size_t count;
 } blog_catalog_t;
 
-static void sbuf_init(sbuf_t *sb) {
-    sb->cap = 4096;
-    sb->len = 0;
-    sb->data = (char *)malloc(sb->cap);
-    if (sb->data) sb->data[0] = '\0';
-}
-
-static void sbuf_reserve(sbuf_t *sb, size_t add) {
-    if (!sb->data) return;
-    if (sb->len + add + 1 <= sb->cap) return;
-    size_t new_cap = sb->cap * 2;
-    while (sb->len + add + 1 > new_cap) new_cap *= 2;
-    char *tmp = (char *)realloc(sb->data, new_cap);
-    if (!tmp) return;
-    sb->data = tmp;
-    sb->cap = new_cap;
-}
-
-static void sbuf_append_n(sbuf_t *sb, const char *text, size_t n) {
-    if (!sb->data || !text) return;
-    sbuf_reserve(sb, n);
-    memcpy(sb->data + sb->len, text, n);
-    sb->len += n;
-    sb->data[sb->len] = '\0';
-}
-
-static void sbuf_append(sbuf_t *sb, const char *text) {
-    if (!text) return;
-    sbuf_append_n(sb, text, strlen(text));
-}
-
-static void sbuf_append_fmt(sbuf_t *sb, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    va_list copy;
-    va_copy(copy, args);
-    int needed = vsnprintf(NULL, 0, fmt, copy);
-    va_end(copy);
-    if (needed < 0) {
-        va_end(args);
-        return;
-    }
-    sbuf_reserve(sb, (size_t)needed);
-    vsnprintf(sb->data + sb->len, sb->cap - sb->len, fmt, args);
-    sb->len += (size_t)needed;
-    va_end(args);
-}
-
-static void sbuf_reset(sbuf_t *sb) {
-    if (sb->data) sb->data[0] = '\0';
-    sb->len = 0;
-}
-
-static void sbuf_free(sbuf_t *sb) {
-    free(sb->data);
-    sb->data = NULL;
-    sb->len = sb->cap = 0;
-}
-
-static void html_escape(sbuf_t *sb, const char *text) {
-    if (!text) return;
-    for (const char *p = text; *p; ++p) {
-        switch (*p) {
-            case '&': sbuf_append(sb, "&amp;"); break;
-            case '<': sbuf_append(sb, "&lt;"); break;
-            case '>': sbuf_append(sb, "&gt;"); break;
-            case '"': sbuf_append(sb, "&quot;"); break;
-            case '\'': sbuf_append(sb, "&#39;"); break;
-            default:
-                sbuf_append_n(sb, p, 1);
-        }
-    }
-}
+/* ── Utilities ──────────────────────────────────────────────────────────── */
 
 static char *strdup_safe(const char *src) {
     return src ? strdup(src) : NULL;
@@ -133,30 +58,21 @@ static char *read_file(const char *path, size_t *out_len) {
     fseek(fp, 0, SEEK_END);
     long len = ftell(fp);
     fseek(fp, 0, SEEK_SET);
-    if (len < 0) {
-        fclose(fp);
-        return NULL;
-    }
+    if (len < 0) { fclose(fp); return NULL; }
     char *buf = (char *)malloc((size_t)len + 1);
-    if (!buf) {
-        fclose(fp);
-        return NULL;
-    }
-    size_t read = fread(buf, 1, (size_t)len, fp);
+    if (!buf) { fclose(fp); return NULL; }
+    size_t n = fread(buf, 1, (size_t)len, fp);
     fclose(fp);
-    buf[read] = '\0';
-    if (out_len) *out_len = read;
+    buf[n] = '\0';
+    if (out_len) *out_len = n;
     return buf;
 }
 
 static bool ensure_dir(const char *path) {
     struct stat st;
-    if (stat(path, &st) == 0) {
-        return S_ISDIR(st.st_mode);
-    }
+    if (stat(path, &st) == 0) return S_ISDIR(st.st_mode);
     if (mkdir(path, 0755) == 0) return true;
-    if (errno == EEXIST) return true;
-    return false;
+    return errno == EEXIST;
 }
 
 static bool ensure_parents(const char *filepath) {
@@ -169,10 +85,7 @@ static bool ensure_parents(const char *filepath) {
     for (char *p = tmp + 1; *p; ++p) {
         if (*p == '/') {
             *p = '\0';
-            if (!ensure_dir(tmp)) {
-                *p = '/';
-                return false;
-            }
+            if (!ensure_dir(tmp)) { *p = '/'; return false; }
             *p = '/';
         }
     }
@@ -185,10 +98,7 @@ static bool write_file(const char *path, const char *content) {
         return false;
     }
     FILE *fp = fopen(path, "wb");
-    if (!fp) {
-        fprintf(stderr, "[bloggen] cannot write %s\n", path);
-        return false;
-    }
+    if (!fp) { fprintf(stderr, "[bloggen] cannot write %s\n", path); return false; }
     size_t len = content ? strlen(content) : 0;
     if (len > 0) fwrite(content, 1, len, fp);
     fclose(fp);
@@ -204,22 +114,18 @@ static char *trim(char *str) {
     return str;
 }
 
+/* ── Catalog management ─────────────────────────────────────────────────── */
+
 static void free_catalog(blog_catalog_t *catalog) {
     if (!catalog || !catalog->items) return;
     for (size_t i = 0; i < catalog->count; ++i) {
         blog_category_t *cat = &catalog->items[i];
-        free(cat->id);
-        free(cat->title);
-        free(cat->description);
-        free(cat->accent_primary);
-        free(cat->accent_secondary);
+        free(cat->id); free(cat->title); free(cat->description);
+        free(cat->accent_primary); free(cat->accent_secondary);
         for (size_t j = 0; j < cat->post_count; ++j) {
             blog_post_t *post = &cat->posts[j];
-            free(post->slug);
-            free(post->title);
-            free(post->date);
-            free(post->excerpt);
-            free(post->source_path);
+            free(post->slug); free(post->title); free(post->date);
+            free(post->excerpt); free(post->source_path);
             for (size_t t = 0; t < post->tag_count; ++t) free(post->tags[t]);
             free(post->tags);
         }
@@ -237,8 +143,8 @@ static blog_category_t *add_category(blog_catalog_t *catalog) {
     catalog->items = tmp;
     blog_category_t *cat = &catalog->items[catalog->count];
     memset(cat, 0, sizeof(*cat));
-    cat->accent_primary = strdup_safe("#ff7a18");
-    cat->accent_secondary = strdup_safe("#ffb347");
+    cat->accent_primary   = strdup_safe("#ff6b2b");
+    cat->accent_secondary = strdup_safe("#ff9b6b");
     cat->order = (int)new_count;
     catalog->count = new_count;
     return cat;
@@ -246,10 +152,7 @@ static blog_category_t *add_category(blog_catalog_t *catalog) {
 
 static bool load_categories_cfg(const char *path, blog_catalog_t *catalog) {
     FILE *fp = fopen(path, "r");
-    if (!fp) {
-        fprintf(stderr, "[bloggen] cannot open %s\n", path);
-        return false;
-    }
+    if (!fp) { fprintf(stderr, "[bloggen] cannot open %s\n", path); return false; }
     char line[1024];
     blog_category_t *current = NULL;
     while (fgets(line, sizeof(line), fp)) {
@@ -270,21 +173,11 @@ static bool load_categories_cfg(const char *path, blog_catalog_t *catalog) {
         *eq = '\0';
         char *key = trim(trimmed);
         char *val = trim(eq + 1);
-        if (strcmp(key, "title") == 0) {
-            free(current->title);
-            current->title = strdup_safe(val);
-        } else if (strcmp(key, "description") == 0) {
-            free(current->description);
-            current->description = strdup_safe(val);
-        } else if (strcmp(key, "accent_primary") == 0) {
-            free(current->accent_primary);
-            current->accent_primary = strdup_safe(val);
-        } else if (strcmp(key, "accent_secondary") == 0) {
-            free(current->accent_secondary);
-            current->accent_secondary = strdup_safe(val);
-        } else if (strcmp(key, "order") == 0) {
-            current->order = atoi(val);
-        }
+        if      (strcmp(key, "title")           == 0) { free(current->title);           current->title           = strdup_safe(val); }
+        else if (strcmp(key, "description")     == 0) { free(current->description);     current->description     = strdup_safe(val); }
+        else if (strcmp(key, "accent_primary")  == 0) { free(current->accent_primary);  current->accent_primary  = strdup_safe(val); }
+        else if (strcmp(key, "accent_secondary")== 0) { free(current->accent_secondary);current->accent_secondary= strdup_safe(val); }
+        else if (strcmp(key, "order")           == 0) { current->order = atoi(val); }
     }
     fclose(fp);
     return catalog->count > 0;
@@ -304,22 +197,18 @@ static void parse_tags(blog_post_t *post, const char *csv) {
     if (!copy) return;
     char *token = strtok(copy, ",");
     while (token) {
-        char *trimmed = trim(token);
-        if (*trimmed) add_tag(post, trimmed);
+        char *t = trim(token);
+        if (*t) add_tag(post, t);
         token = strtok(NULL, ",");
     }
     free(copy);
 }
 
 static bool parse_front_matter(const char *content, size_t len,
-                               size_t *body_offset,
-                               blog_post_t *post) {
+                               size_t *body_offset, blog_post_t *post) {
     const char *ptr = content;
     const char *end = content + len;
-    if (len < 3 || strncmp(ptr, "---", 3) != 0) {
-        *body_offset = 0;
-        return true;
-    }
+    if (len < 3 || strncmp(ptr, "---", 3) != 0) { *body_offset = 0; return true; }
     ptr = strchr(ptr, '\n');
     if (!ptr) return false;
     ptr++;
@@ -339,20 +228,11 @@ static bool parse_front_matter(const char *content, size_t len,
             *eq = '\0';
             char *key = trim(line);
             char *val = trim(eq + 1);
-            if (strcmp(key, "title") == 0) {
-                free(post->title);
-                post->title = strdup_safe(val);
-            } else if (strcmp(key, "date") == 0) {
-                free(post->date);
-                post->date = strdup_safe(val);
-            } else if (strcmp(key, "excerpt") == 0) {
-                free(post->excerpt);
-                post->excerpt = strdup_safe(val);
-            } else if (strcmp(key, "tags") == 0) {
-                parse_tags(post, val);
-            } else if (strcmp(key, "reading_minutes") == 0) {
-                post->reading_minutes = atoi(val);
-            }
+            if      (strcmp(key, "title")           == 0) { free(post->title);   post->title   = strdup_safe(val); }
+            else if (strcmp(key, "date")            == 0) { free(post->date);    post->date    = strdup_safe(val); }
+            else if (strcmp(key, "excerpt")         == 0) { free(post->excerpt); post->excerpt = strdup_safe(val); }
+            else if (strcmp(key, "tags")            == 0) { parse_tags(post, val); }
+            else if (strcmp(key, "reading_minutes") == 0) { post->reading_minutes = atoi(val); }
         }
         if (!line_end) break;
         ptr = line_end + 1;
@@ -364,10 +244,7 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
     char dir_path[PATH_MAX_LEN];
     snprintf(dir_path, sizeof(dir_path), "%s/%s", posts_root, cat->id);
     DIR *dir = opendir(dir_path);
-    if (!dir) {
-        fprintf(stderr, "[bloggen] missing directory %s\n", dir_path);
-        return false;
-    }
+    if (!dir) { fprintf(stderr, "[bloggen] missing directory %s\n", dir_path); return false; }
     struct dirent *entry;
     size_t count = 0;
     blog_post_t *posts = NULL;
@@ -385,33 +262,25 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
         post->slug = (char *)malloc(slug_len + 1);
         memcpy(post->slug, entry->d_name, slug_len);
         post->slug[slug_len] = '\0';
-
         char file_path[PATH_MAX_LEN];
         snprintf(file_path, sizeof(file_path), "%s/%s", dir_path, entry->d_name);
         size_t file_len = 0;
         char *content = read_file(file_path, &file_len);
-        if (!content) {
-            fprintf(stderr, "[bloggen] failed to read %s\n", file_path);
-            free(content);
-            continue;
-        }
+        if (!content) { fprintf(stderr, "[bloggen] failed to read %s\n", file_path); continue; }
         size_t body_offset = 0;
         if (!parse_front_matter(content, file_len, &body_offset, post)) {
             fprintf(stderr, "[bloggen] invalid front matter in %s\n", file_path);
-            free(content);
-            continue;
+            free(content); continue;
         }
-        if (!post->title) {
-            post->title = strdup_safe(post->slug);
-        }
+        if (!post->title) post->title = strdup_safe(post->slug);
         if (!post->excerpt) {
             const char *body = content + body_offset;
-            size_t excerpt_len = strlen(body);
-            if (excerpt_len > 180) excerpt_len = 180;
-            char *excerpt = (char *)malloc(excerpt_len + 1);
-            memcpy(excerpt, body, excerpt_len);
-            excerpt[excerpt_len] = '\0';
-            post->excerpt = excerpt;
+            size_t elen = strlen(body);
+            if (elen > MAX_EXCERPT_LEN) elen = MAX_EXCERPT_LEN;
+            char *exc = (char *)malloc(elen + 1);
+            memcpy(exc, body, elen);
+            exc[elen] = '\0';
+            post->excerpt = exc;
         }
         post->source_path = strdup_safe(file_path);
         free(content);
@@ -424,216 +293,430 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
 }
 
 static int compare_categories(const void *a, const void *b) {
-    const blog_category_t *ca = (const blog_category_t *)a;
-    const blog_category_t *cb = (const blog_category_t *)b;
-    return ca->order - cb->order;
+    return ((const blog_category_t *)a)->order - ((const blog_category_t *)b)->order;
 }
+
+/* ── cwist_sstring helpers ──────────────────────────────────────────────── */
+
+/* Append a formatted string to an sstring (printf-style). */
+static void ss_fmt(cwist_sstring *ss, const char *fmt, ...) {
+    va_list ap, copy;
+    va_start(ap, fmt);
+    va_copy(copy, ap);
+    int needed = vsnprintf(NULL, 0, fmt, copy);
+    va_end(copy);
+    if (needed <= 0) { va_end(ap); return; }
+    char *tmp = (char *)malloc((size_t)needed + 1);
+    if (!tmp) { va_end(ap); return; }
+    vsnprintf(tmp, (size_t)needed + 1, fmt, ap);
+    va_end(ap);
+    cwist_sstring_append(ss, tmp);
+    free(tmp);
+}
+
+/* ── Markdown rendering ─────────────────────────────────────────────────── */
 
 static void md_callback(const MD_CHAR *text, MD_SIZE size, void *userdata) {
-    sbuf_t *sb = (sbuf_t *)userdata;
-    sbuf_append_n(sb, (const char *)text, (size_t)size);
+    cwist_sstring_append_len((cwist_sstring *)userdata, (const char *)text, (size_t)size);
 }
 
-static bool render_markdown(const char *path, sbuf_t *out) {
+static bool render_markdown(const char *path, cwist_sstring *out) {
     size_t len = 0;
     char *content = read_file(path, &len);
-    if (!content) {
-        fprintf(stderr, "[bloggen] failed to read markdown %s\n", path);
-        return false;
+    if (!content) { fprintf(stderr, "[bloggen] failed to read markdown %s\n", path); return false; }
+
+    /* Skip YAML front matter (--- ... ---) before handing to md4c */
+    const char *body = content;
+    size_t body_len  = len;
+    if (len >= 3 && strncmp(content, "---", 3) == 0) {
+        const char *nl = strchr(content + 3, '\n');
+        if (nl) {
+            const char *p = nl + 1;
+            while (p < content + len) {
+                const char *line_end = strchr(p, '\n');
+                size_t line_len = line_end ? (size_t)(line_end - p) : (size_t)(content + len - p);
+                if (line_len >= 3 && strncmp(p, "---", 3) == 0) {
+                    body     = line_end ? line_end + 1 : content + len;
+                    body_len = (size_t)(content + len - body);
+                    break;
+                }
+                if (!line_end) break;
+                p = line_end + 1;
+            }
+        }
     }
-    sbuf_reset(out);
-    int rc = md_html((const MD_CHAR *)content, (MD_SIZE)len, md_callback, out,
+
+    cwist_sstring_assign_len(out, "", 0);
+    int rc = md_html((const MD_CHAR *)body, (MD_SIZE)body_len, md_callback, out,
                      MD_FLAG_TABLES | MD_FLAG_STRIKETHROUGH | MD_FLAG_TASKLISTS,
                      MD_HTML_FLAG_SKIP_UTF8_BOM);
     free(content);
     return rc == 0;
 }
 
-static void append_prefixed(sbuf_t *sb, const char *prefix, const char *suffix) {
-    if (prefix) sbuf_append(sb, prefix);
-    sbuf_append(sb, suffix);
-}
+/* ── HTML layout ────────────────────────────────────────────────────────── */
 
-static void render_layout(blog_catalog_t *catalog, const char *page_title,
-                          const char *accent_primary, const char *accent_secondary,
-                          const char *active_category,
-                          const char *main_html,
-                          const char *root_prefix,
-                          sbuf_t *out) {
-    sbuf_reset(out);
-    sbuf_append(out, "<!DOCTYPE html><html lang=\"ko\"><head><meta charset=\"utf-8\">");
-    sbuf_append(out, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-    sbuf_append(out, "<title>");
-    html_escape(out, page_title ? page_title : "cwist Blog");
-    sbuf_append(out, "</title><link rel=\"stylesheet\" href=\"");
-    append_prefixed(out, root_prefix, "assets/styles.css\">");
-    if (accent_primary && accent_secondary) {
-        sbuf_append(out, "<style>:root{--accent-primary:");
-        sbuf_append(out, accent_primary);
-        sbuf_append(out, ";--accent-secondary:");
-        sbuf_append(out, accent_secondary);
-        sbuf_append(out, ";}</style>");
-    }
-    sbuf_append(out, "</head><body><div class=\"page-shell\"><nav><div class=\"brand\">cwist Material Blog</div><div class=\"nav-links\">");
+/*
+ * render_nav — emits the sticky top navigation bar.
+ * active_category is the id of the current category, or NULL for home.
+ */
+static void render_nav(blog_catalog_t *catalog, const char *active_category,
+                       const char *root_prefix, cwist_sstring *out) {
+    cwist_sstring_append(out,
+        "<header class=\"site-header\">\n"
+        "<nav class=\"nav\">\n"
+        "<a class=\"brand\" href=\"");
+    cwist_sstring_append(out, root_prefix);
+    cwist_sstring_append(out, "\">"
+        "<span class=\"brand-hex\">&#x2B21;</span>"
+        "<span>Religiya Serdtsa</span>"
+        "</a>\n"
+        "<ul class=\"nav-list\">\n");
     for (size_t i = 0; i < catalog->count; ++i) {
         blog_category_t *cat = &catalog->items[i];
         if (!cat->id || !cat->title) continue;
-        sbuf_append(out, "<a ");
-        if (active_category && strcmp(active_category, cat->id) == 0) sbuf_append(out, "class=\"active\" ");
-        sbuf_append(out, "href=\"");
-        append_prefixed(out, root_prefix, "category/");
-        sbuf_append(out, cat->id);
-        sbuf_append(out, "/\">");
-        html_escape(out, cat->title);
-        sbuf_append(out, "</a>");
+        bool active = active_category && strcmp(active_category, cat->id) == 0;
+        cwist_sstring_append(out, "<li><a");
+        if (active) cwist_sstring_append(out, " class=\"active\"");
+        cwist_sstring_append(out, " href=\"");
+        cwist_sstring_append(out, root_prefix);
+        cwist_sstring_append(out, "category/");
+        cwist_sstring_append(out, cat->id);
+        cwist_sstring_append(out, "/\">");
+        cwist_sstring_append_escaped(out, cat->title);
+        cwist_sstring_append(out, "</a></li>\n");
     }
-    sbuf_append(out, "</div></nav><main>");
-    sbuf_append(out, main_html ? main_html : "");
-    sbuf_append(out, "</main><footer>GitHub Pages static build</footer></div></body></html>");
+    cwist_sstring_append(out,
+        "</ul>\n"
+        "</nav>\n"
+        "</header>\n");
 }
+
+/*
+ * render_page — wraps content in the full HTML page shell.
+ * accent_primary / accent_secondary: CSS variable overrides (may be NULL).
+ */
+static void render_page(blog_catalog_t *catalog,
+                        const char *page_title,
+                        const char *accent_primary,
+                        const char *accent_secondary,
+                        const char *active_category,
+                        cwist_sstring *main_content,
+                        const char *root_prefix,
+                        cwist_sstring *out) {
+    cwist_sstring_assign_len(out, "", 0);
+    cwist_sstring_append(out,
+        "<!DOCTYPE html>\n"
+        "<html lang=\"ko\">\n"
+        "<head>\n"
+        "<meta charset=\"utf-8\">\n"
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+        "<title>");
+    cwist_sstring_append_escaped(out, page_title ? page_title : "Religiya Serdtsa");
+    cwist_sstring_append(out, "</title>\n<link rel=\"stylesheet\" href=\"");
+    cwist_sstring_append(out, root_prefix);
+    cwist_sstring_append(out, "assets/styles.css\">\n");
+    if (accent_primary && accent_secondary) {
+        cwist_sstring_append(out, "<style>:root{--accent:");
+        cwist_sstring_append(out, accent_primary);
+        cwist_sstring_append(out, ";--accent-hover:");
+        cwist_sstring_append(out, accent_secondary);
+        cwist_sstring_append(out, ";}</style>\n");
+    }
+    cwist_sstring_append(out,
+        "</head>\n"
+        "<body>\n"
+        "<div class=\"site-wrap\">\n");
+    render_nav(catalog, active_category, root_prefix, out);
+    cwist_sstring_append(out, "<main class=\"main\">\n");
+    if (main_content && main_content->data) cwist_sstring_append(out, main_content->data);
+    cwist_sstring_append(out,
+        "\n</main>\n"
+        "<footer class=\"site-footer\">\n"
+        "<p>Built with <a href=\"https://github.com/gg582/cwist\">cwist</a>"
+        " + md4c &middot; GitHub Pages</p>\n"
+        "</footer>\n"
+        "</div>\n"
+        "</body>\n"
+        "</html>\n");
+}
+
+/* ── Page builders ──────────────────────────────────────────────────────── */
 
 static void build_home(blog_catalog_t *catalog, const char *out_dir) {
-    sbuf_t section, page;
-    sbuf_init(&section);
-    sbuf_init(&page);
+    cwist_sstring *content = cwist_sstring_create();
+    cwist_sstring *page    = cwist_sstring_create();
 
-    sbuf_append(&section, "<section class=\"card\"><h1>Categories</h1><div class=\"category-list\">");
+    /* hero */
+    cwist_sstring_append(content,
+        "<section class=\"hero\">\n"
+        "<p class=\"hero-label\">cwist &middot; static blog</p>\n"
+        "<h1 class=\"hero-title\">Religiya Serdtsa</h1>\n"
+        "<p class=\"hero-desc\">"
+        "cwist \355\224\204\353\240\210\354\236\204\354\233\214\355\201\254\354\231\200 "
+        "\354\240\225\354\240\201 \354\202\254\354\235\264\355\212\270 \354\203\235\354\204\261\354\227\220 "
+        "\352\264\200\355\225\234 \352\270\260\354\210\240 \353\205\270\355\212\270"
+        "</p>\n"
+        "</section>\n");
+
+    /* category grid */
+    cwist_sstring_append(content,
+        "<section>\n"
+        "<h2 class=\"section-title\">\xEC\xB9\xB4\xED\x85\x8C\xEA\xB3\xA0\xEB\xA6\xAC</h2>\n"
+        "<div class=\"cat-grid\">\n");
+
     for (size_t i = 0; i < catalog->count; ++i) {
         blog_category_t *cat = &catalog->items[i];
         if (!cat->id || !cat->title) continue;
-        sbuf_append(&section, "<a class=\"category-card\" href=\"");
-        append_prefixed(&section, "", "category/");
-        sbuf_append(&section, cat->id);
-        sbuf_append(&section, "/\"><div class=\"accent-pill\"><span class=\"accent-dot\" style=\"background:");
-        sbuf_append(&section, cat->accent_primary);
-        sbuf_append(&section, ";\"></span>");
-        html_escape(&section, cat->title);
-        sbuf_append(&section, "</div><p>");
-        html_escape(&section, cat->description ? cat->description : "");
-        sbuf_append(&section, "</p></a>");
+        cwist_sstring_append(content, "<a class=\"cat-card\" href=\"category/");
+        cwist_sstring_append(content, cat->id);
+        cwist_sstring_append(content, "/\">\n");
+        cwist_sstring_append(content, "<div class=\"cat-card-bar\" style=\"background:linear-gradient(90deg,");
+        cwist_sstring_append(content, cat->accent_primary);
+        cwist_sstring_append(content, ",");
+        cwist_sstring_append(content, cat->accent_secondary);
+        cwist_sstring_append(content, ");\"></div>\n");
+        cwist_sstring_append(content, "<div class=\"cat-card-body\">\n");
+        cwist_sstring_append(content, "<h3 class=\"cat-card-title\">");
+        cwist_sstring_append_escaped(content, cat->title);
+        cwist_sstring_append(content, "</h3>\n");
+        cwist_sstring_append(content, "<p class=\"cat-card-desc\">");
+        cwist_sstring_append_escaped(content, cat->description ? cat->description : "");
+        cwist_sstring_append(content, "</p>\n");
+        cwist_sstring_append(content, "<div class=\"cat-card-meta\">\n");
+        cwist_sstring_append(content, "<span class=\"cat-card-count\">");
+        ss_fmt(content, "%zu", cat->post_count);
+        /* "posts" in Korean: 포스트 */
+        cwist_sstring_append(content, " \xED\x8F\xAC\xEC\x8A\xA4\xED\x8A\xB8</span>\n");
+        cwist_sstring_append(content, "<span class=\"cat-card-arrow\">&rarr;</span>\n");
+        cwist_sstring_append(content, "</div>\n</div>\n</a>\n");
     }
-    sbuf_append(&section, "</div></section>");
+    cwist_sstring_append(content, "</div>\n</section>\n");
 
-    render_layout(catalog, "cwist Blog", NULL, NULL, NULL, section.data, "", &page);
+    render_page(catalog, "Religiya Serdtsa", NULL, NULL, NULL, content, "", page);
 
     char path[PATH_MAX_LEN];
     snprintf(path, sizeof(path), "%s/index.html", out_dir);
-    write_file(path, page.data);
+    write_file(path, page->data);
 
-    sbuf_free(&section);
-    sbuf_free(&page);
+    cwist_sstring_destroy(content);
+    cwist_sstring_destroy(page);
 }
 
-static void build_category_page(blog_catalog_t *catalog, blog_category_t *cat, const char *out_dir) {
-    sbuf_t section, page;
-    sbuf_init(&section);
-    sbuf_init(&page);
-    const char *root_prefix = "../../";
+static void build_category_page(blog_catalog_t *catalog, blog_category_t *cat,
+                                const char *out_dir) {
+    cwist_sstring *content = cwist_sstring_create();
+    cwist_sstring *page    = cwist_sstring_create();
+    const char *root = "../../";
 
-    sbuf_append(&section, "<section class=\"card\"><h1>");
-    html_escape(&section, cat->title);
-    sbuf_append(&section, "</h1><p>");
-    html_escape(&section, cat->description ? cat->description : "");
-    sbuf_append(&section, "</p><div class=\"post-list\">");
+    /* page top: breadcrumb + header */
+    cwist_sstring_append(content, "<div class=\"page-top\">\n");
+    cwist_sstring_append(content,
+        "<nav class=\"breadcrumb\">"
+        "<a href=\"../../\">\xED\x99\x88</a>"
+        "<span class=\"bc-sep\">/</span>"
+        "<span>");
+    cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
+    cwist_sstring_append(content, "</span></nav>\n");
+
+    cwist_sstring_append(content, "<div style=\"display:flex;align-items:center;gap:.6rem\">\n");
+    cwist_sstring_append(content,
+        "<span class=\"page-title-accent\" style=\"background:linear-gradient(135deg,");
+    cwist_sstring_append(content, cat->accent_primary);
+    cwist_sstring_append(content, ",");
+    cwist_sstring_append(content, cat->accent_secondary);
+    cwist_sstring_append(content, ");\"></span>\n");
+    cwist_sstring_append(content, "<h1 class=\"page-title\">");
+    cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
+    cwist_sstring_append(content, "</h1>\n</div>\n");
+
+    cwist_sstring_append(content, "<p class=\"page-desc\">");
+    cwist_sstring_append_escaped(content, cat->description ? cat->description : "");
+    cwist_sstring_append(content, "</p>\n");
+
+    cwist_sstring_append(content, "<div class=\"page-meta\">\n");
+    cwist_sstring_append(content, "<span class=\"post-count-badge\">");
+    ss_fmt(content, "%zu", cat->post_count);
+    cwist_sstring_append(content, " posts</span>\n</div>\n</div>\n");
+
+    /* post grid */
+    cwist_sstring_append(content, "<div class=\"post-grid\">\n");
     for (size_t i = 0; i < cat->post_count; ++i) {
         blog_post_t *post = &cat->posts[i];
         if (!post->slug || !post->title) continue;
-        sbuf_append(&section, "<a class=\"post-card\" href=\"");
-        append_prefixed(&section, root_prefix, "post/");
-        sbuf_append(&section, cat->id);
-        sbuf_append(&section, "/");
-        sbuf_append(&section, post->slug);
-        sbuf_append(&section, "/\"><h3>");
-        html_escape(&section, post->title);
-        sbuf_append(&section, "</h3><p>");
-        html_escape(&section, post->excerpt ? post->excerpt : "");
-        sbuf_append(&section, "</p><div class=\"tags\">");
-        for (size_t t = 0; t < post->tag_count; ++t) {
-            sbuf_append(&section, "<span class=\"tag\">");
-            html_escape(&section, post->tags[t]);
-            sbuf_append(&section, "</span>");
-        }
-        sbuf_append(&section, "</div></a>");
-    }
-    sbuf_append(&section, "</div></section>");
 
-    render_layout(catalog, cat->title, cat->accent_primary, cat->accent_secondary, cat->id, section.data, root_prefix, &page);
+        cwist_sstring_append(content, "<a class=\"post-card\" href=\"");
+        cwist_sstring_append(content, root);
+        cwist_sstring_append(content, "post/");
+        cwist_sstring_append(content, cat->id);
+        cwist_sstring_append(content, "/");
+        cwist_sstring_append(content, post->slug);
+        cwist_sstring_append(content, "/\">\n");
+
+        /* meta line */
+        cwist_sstring_append(content, "<div class=\"post-card-meta\">\n");
+        if (post->date && *post->date) {
+            cwist_sstring_append(content, "<time>");
+            cwist_sstring_append_escaped(content, post->date);
+            cwist_sstring_append(content, "</time>\n");
+        }
+        if (post->reading_minutes > 0) {
+            cwist_sstring_append(content, "<span class=\"dot\">&middot;</span>\n");
+            ss_fmt(content, "<span>%d min read</span>\n", post->reading_minutes);
+        }
+        cwist_sstring_append(content, "</div>\n");
+
+        cwist_sstring_append(content, "<h3 class=\"post-card-title\">");
+        cwist_sstring_append_escaped(content, post->title);
+        cwist_sstring_append(content, "</h3>\n");
+
+        if (post->excerpt && *post->excerpt) {
+            cwist_sstring_append(content, "<p class=\"post-card-excerpt\">");
+            cwist_sstring_append_escaped(content, post->excerpt);
+            cwist_sstring_append(content, "</p>\n");
+        }
+
+        if (post->tag_count > 0) {
+            cwist_sstring_append(content, "<div class=\"tags\">\n");
+            for (size_t t = 0; t < post->tag_count; ++t) {
+                cwist_sstring_append(content, "<span class=\"tag\">");
+                cwist_sstring_append_escaped(content, post->tags[t]);
+                cwist_sstring_append(content, "</span>\n");
+            }
+            cwist_sstring_append(content, "</div>\n");
+        }
+        cwist_sstring_append(content, "</a>\n");
+    }
+    cwist_sstring_append(content, "</div>\n");
+
+    char page_title_buf[512];
+    snprintf(page_title_buf, sizeof(page_title_buf), "%s – Religiya Serdtsa",
+             cat->title ? cat->title : "");
+
+    render_page(catalog, page_title_buf,
+                cat->accent_primary, cat->accent_secondary,
+                cat->id, content, root, page);
 
     char path[PATH_MAX_LEN];
     snprintf(path, sizeof(path), "%s/category/%s/index.html", out_dir, cat->id);
-    write_file(path, page.data);
+    write_file(path, page->data);
 
-    sbuf_free(&section);
-    sbuf_free(&page);
+    cwist_sstring_destroy(content);
+    cwist_sstring_destroy(page);
 }
 
-static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat, blog_post_t *post, const char *out_dir) {
-    sbuf_t md_html, section, page;
-    sbuf_init(&md_html);
-    sbuf_init(&section);
-    sbuf_init(&page);
-    const char *root_prefix = "../../../";
+static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat,
+                            blog_post_t *post, const char *out_dir) {
+    cwist_sstring *md_out  = cwist_sstring_create();
+    cwist_sstring *content = cwist_sstring_create();
+    cwist_sstring *page    = cwist_sstring_create();
+    const char *root = "../../../";
 
-    if (!render_markdown(post->source_path, &md_html)) {
+    if (!render_markdown(post->source_path, md_out)) {
         fprintf(stderr, "[bloggen] failed to render %s\n", post->source_path);
         goto cleanup;
     }
 
-    sbuf_append(&section, "<section class=\"card\"><a href=\"");
-    append_prefixed(&section, root_prefix, "category/");
-    sbuf_append(&section, cat->id);
-    sbuf_append(&section, "/\">&larr; Back to ");
-    html_escape(&section, cat->title);
-    sbuf_append(&section, "</a><h1>");
-    html_escape(&section, post->title);
-    sbuf_append(&section, "</h1><p>");
-    html_escape(&section, post->date ? post->date : "");
-    if (post->reading_minutes > 0) {
-        sbuf_append(&section, " &middot; ");
-        sbuf_append_fmt(&section, "%d min read", post->reading_minutes);
+    /* article wrap */
+    cwist_sstring_append(content, "<div class=\"article-wrap\">\n");
+
+    /* breadcrumb */
+    cwist_sstring_append(content,
+        "<nav class=\"breadcrumb\">"
+        "<a href=\"../../../\">\xED\x99\x88</a>"
+        "<span class=\"bc-sep\">/</span>");
+    cwist_sstring_append(content, "<a href=\"../../../category/");
+    cwist_sstring_append(content, cat->id);
+    cwist_sstring_append(content, "/\">");
+    cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
+    cwist_sstring_append(content, "</a>"
+        "<span class=\"bc-sep\">/</span>"
+        "<span>");
+    cwist_sstring_append_escaped(content, post->title ? post->title : "");
+    cwist_sstring_append(content, "</span></nav>\n");
+
+    /* article header */
+    cwist_sstring_append(content, "<header class=\"article-header\">\n");
+    if (post->tag_count > 0) {
+        cwist_sstring_append(content, "<div class=\"tags\">\n");
+        for (size_t t = 0; t < post->tag_count; ++t) {
+            cwist_sstring_append(content, "<span class=\"tag\">");
+            cwist_sstring_append_escaped(content, post->tags[t]);
+            cwist_sstring_append(content, "</span>\n");
+        }
+        cwist_sstring_append(content, "</div>\n");
     }
-    sbuf_append(&section, "</p><div class=\"post-body\">");
-    sbuf_append(&section, md_html.data);
-    sbuf_append(&section, "</div></section>");
+    cwist_sstring_append(content, "<h1 class=\"article-title\">");
+    cwist_sstring_append_escaped(content, post->title ? post->title : "");
+    cwist_sstring_append(content, "</h1>\n");
+    cwist_sstring_append(content, "<div class=\"article-meta\">\n");
+    if (post->date && *post->date) {
+        cwist_sstring_append(content, "<time>");
+        cwist_sstring_append_escaped(content, post->date);
+        cwist_sstring_append(content, "</time>\n");
+    }
+    if (post->reading_minutes > 0) {
+        cwist_sstring_append(content, "<span class=\"dot\">&middot;</span>\n");
+        ss_fmt(content, "<span>%d min read</span>\n", post->reading_minutes);
+    }
+    cwist_sstring_append(content, "</div>\n</header>\n");
 
-    render_layout(catalog, post->title, cat->accent_primary, cat->accent_secondary, cat->id, section.data, root_prefix, &page);
+    cwist_sstring_append(content, "<div class=\"divider\"></div>\n");
 
-    char path[PATH_MAX_LEN];
-    snprintf(path, sizeof(path), "%s/post/%s/%s/index.html", out_dir, cat->id, post->slug);
-    write_file(path, page.data);
+    /* article body (rendered markdown) */
+    cwist_sstring_append(content, "<div class=\"article-body\">\n");
+    if (md_out->data) cwist_sstring_append(content, md_out->data);
+    cwist_sstring_append(content, "</div>\n");
+
+    /* article footer: back link */
+    cwist_sstring_append(content, "<footer class=\"article-footer\">\n");
+    cwist_sstring_append(content, "<a class=\"back-link\" href=\"../../../category/");
+    cwist_sstring_append(content, cat->id);
+    cwist_sstring_append(content, "/\">&larr; ");
+    cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
+    cwist_sstring_append(content,
+        "\xEB\xA1\x9C \xEB\x8F\x8C\xEC\x95\x84\xEA\xB0\x80\xEA\xB8\xB0"
+        "</a>\n</footer>\n</div>\n");
+
+    char page_title_buf[512];
+    snprintf(page_title_buf, sizeof(page_title_buf), "%s – Religiya Serdtsa",
+             post->title ? post->title : "");
+
+    render_page(catalog, page_title_buf,
+                cat->accent_primary, cat->accent_secondary,
+                cat->id, content, root, page);
+
+    {
+        char path[PATH_MAX_LEN];
+        snprintf(path, sizeof(path), "%s/post/%s/%s/index.html",
+                 out_dir, cat->id, post->slug);
+        write_file(path, page->data);
+    }
 
 cleanup:
-    sbuf_free(&md_html);
-    sbuf_free(&section);
-    sbuf_free(&page);
+    cwist_sstring_destroy(md_out);
+    cwist_sstring_destroy(content);
+    cwist_sstring_destroy(page);
 }
+
+/* ── Asset copy ─────────────────────────────────────────────────────────── */
 
 static void copy_assets(const char *src_css, const char *out_dir) {
     char dst_path[PATH_MAX_LEN];
     snprintf(dst_path, sizeof(dst_path), "%s/assets/styles.css", out_dir);
     if (!ensure_parents(dst_path)) {
-        fprintf(stderr, "[bloggen] failed to create assets directory\n");
-        return;
+        fprintf(stderr, "[bloggen] failed to create assets directory\n"); return;
     }
     FILE *src = fopen(src_css, "rb");
-    if (!src) {
-        fprintf(stderr, "[bloggen] missing %s\n", src_css);
-        return;
-    }
+    if (!src) { fprintf(stderr, "[bloggen] missing %s\n", src_css); return; }
     FILE *dst = fopen(dst_path, "wb");
-    if (!dst) {
-        fclose(src);
-        fprintf(stderr, "[bloggen] cannot write %s\n", dst_path);
-        return;
-    }
-    char buf[4096];
-    size_t n;
-    while ((n = fread(buf, 1, sizeof(buf), src)) > 0) {
-        fwrite(buf, 1, n, dst);
-    }
-    fclose(src);
-    fclose(dst);
+    if (!dst) { fclose(src); fprintf(stderr, "[bloggen] cannot write %s\n", dst_path); return; }
+    char buf[4096]; size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), src)) > 0) fwrite(buf, 1, n, dst);
+    fclose(src); fclose(dst);
 }
+
+/* ── main ───────────────────────────────────────────────────────────────── */
 
 int main(int argc, char **argv) {
     if (argc < 5) {
@@ -641,9 +724,9 @@ int main(int argc, char **argv) {
         return 1;
     }
     const char *categories_cfg = argv[1];
-    const char *posts_dir = argv[2];
-    const char *assets_css = argv[3];
-    const char *out_dir = argv[4];
+    const char *posts_dir      = argv[2];
+    const char *assets_css     = argv[3];
+    const char *out_dir        = argv[4];
 
     blog_catalog_t catalog = {0};
     if (!load_categories_cfg(categories_cfg, &catalog)) {
@@ -659,15 +742,13 @@ int main(int argc, char **argv) {
     }
 
     copy_assets(assets_css, out_dir);
-
     build_home(&catalog, out_dir);
     for (size_t i = 0; i < catalog.count; ++i) {
         blog_category_t *cat = &catalog.items[i];
         if (!cat->id) continue;
         build_category_page(&catalog, cat, out_dir);
-        for (size_t j = 0; j < cat->post_count; ++j) {
+        for (size_t j = 0; j < cat->post_count; ++j)
             build_post_page(&catalog, cat, &cat->posts[j], out_dir);
-        }
     }
 
     free_catalog(&catalog);
