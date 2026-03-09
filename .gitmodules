@@ -1,0 +1,3 @@
+[submodule "lib/cwist"]
+	path = lib/cwist
+	url = https://github.com/gg582/cwist
