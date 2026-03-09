@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>주황색 하이라이트와 다크 모드 UX</title><link rel="stylesheet" href="../../../assets/styles.css"><style>:root{--accent-primary:#f471ff;--accent-secondary:#ffb8ef;}</style></head><body><div class="page-shell"><nav><div class="brand">cwist Material Blog</div><div class="nav-links"><a href="../../../category/welcome/">Welcome</a><a href="../../../category/how-to-contribute/">How to Contribute</a><a href="../../../category/development/">Development</a><a class="active" href="../../../category/software/">Software</a></div></nav><main><section class="card"><a href="../../../category/software/">&larr; Back to Software</a><h1>주황색 하이라이트와 다크 모드 UX</h1><p>2024-05-24 &middot; 2 min read</p><div class="post-body"><hr>
+<h2>title: 주황색 하이라이트와 다크 모드 UX
+date: 2024-05-24
+excerpt: 토글 UX와 하이라이트 색 체계를 정리했습니다.
+tags: Design, UX, Theme
+reading_minutes: 2</h2>
+<h1>주황색 하이라이트와 다크 모드 UX</h1>
+<p>웹 접근성을 고려하면 단순히 다크 모드를 켜는 것 이상이 필요합니다. 이번 테마는 다음 요소를 갖습니다.</p>
+<ul>
+<li><code>prefers-color-scheme</code>를 감지해 초기 모드를 정합니다.</li>
+<li>사용자의 선택은 <code>localStorage</code>에 저장합니다.</li>
+<li>모든 <code>code</code>, <code>mark</code>, <code>::selection</code> 컬러는 <code>#ff7a18</code> 그라데이션을 기반으로 통합했습니다.</li>
+<li>Material UI <code>Paper</code>와 <code>Card</code> 그림자를 줄여 GitHub Pages에서도 부드럽게 보입니다.</li>
+</ul>
+<pre><code class="language-js">const theme = React.useMemo(() =&gt; createTheme({
+  palette: {
+    mode,
+    primary: {
+      main: '#ff7a18',
+      contrastText: '#111'
+    },
+    background: {
+      default: mode === 'dark' ? '#0f1116' : '#f4f6fb',
+      paper: mode === 'dark' ? '#151821' : '#ffffff'
+    }
+  },
+  shape: {
+    borderRadius: 16
+  }
+}), [mode]);
+</code></pre>
+<p>모드 전환 스위치는 AppBar 우측에 배치되어 있으며, 키보드 접근성을 위해 <code>aria-label</code>과 포커스 링을 명시했습니다. 사용자는 코드 블록과 체크리스트 등 모든 Markdown 요소에서 동일한 하이라이트를 경험할 수 있습니다.</p>
+</div></section></main><footer>GitHub Pages static build</footer></div></body></html>
