@@ -1,9 +1,43 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Emscripten과 Material UI의 조합</title><link rel="stylesheet" href="../../../assets/styles.css"><style>:root{--accent-primary:#5b8dff;--accent-secondary:#9cc0ff;}</style></head><body><div class="page-shell"><nav><div class="brand">cwist Material Blog</div><div class="nav-links"><a href="../../../category/welcome/">Welcome</a><a href="../../../category/how-to-contribute/">How to Contribute</a><a class="active" href="../../../category/development/">Development</a><a href="../../../category/software/">Software</a></div></nav><main><section class="card"><a href="../../../category/development/">&larr; Back to Development</a><h1>Emscripten과 Material UI의 조합</h1><p>2024-05-23 &middot; 3 min read</p><div class="post-body"><hr>
-<h2>title: Emscripten과 Material UI의 조합
-date: 2024-05-23
-excerpt: Material UI SPA와 Wasm 커널이 협업하는 전체 변환 경로.
-tags: Material UI, WASM, React
-reading_minutes: 3</h2>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emscripten과 Material UI의 조합 – Religiya Serdtsa</title>
+<link rel="stylesheet" href="../../../assets/styles.css">
+<style>:root{--accent:#5b8dff;--accent-hover:#9cc0ff;}</style>
+</head>
+<body>
+<div class="site-wrap">
+<header class="site-header">
+<nav class="nav">
+<a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
+<ul class="nav-list">
+<li><a href="../../../category/welcome/">Welcome</a></li>
+<li><a href="../../../category/how-to-contribute/">How to Contribute</a></li>
+<li><a class="active" href="../../../category/development/">Development</a></li>
+<li><a href="../../../category/software/">Software</a></li>
+</ul>
+</nav>
+</header>
+<main class="main">
+<div class="article-wrap">
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/development/">Development</a><span class="bc-sep">/</span><span>Emscripten과 Material UI의 조합</span></nav>
+<header class="article-header">
+<div class="tags">
+<span class="tag">Material UI</span>
+<span class="tag">WASM</span>
+<span class="tag">React</span>
+</div>
+<h1 class="article-title">Emscripten과 Material UI의 조합</h1>
+<div class="article-meta">
+<time>2024-05-23</time>
+<span class="dot">&middot;</span>
+<span>3 min read</span>
+</div>
+</header>
+<div class="divider"></div>
+<div class="article-body">
 <h1>Emscripten과 Material UI의 조합</h1>
 <p>GitHub Pages에서는 서버 사이드 렌더러를 올릴 수 없기 때문에, 정적인 빌드와 브라우저 내부 연산을 조합해야 합니다. 이번 블로그는 다음과 같은 순서로 로드됩니다.</p>
 <pre><code class="language-mermaid">graph TD;
@@ -22,4 +56,16 @@ reading_minutes: 3</h2>
 <p><strong>Tip</strong>: 새 글을 작성할 때는 <code>docs/categories.cfg</code>에 카테고리 정보를 추가하고, 동일한 폴더에 프런트 매터가 포함된 <code>.md</code> 파일을 저장한 뒤 <code>make static-site</code>만 실행하면 됩니다.</p>
 </blockquote>
 <p>Material UI 테마는 <code>createTheme</code>로 생성하며 <code>palette.primary.main</code>을 주황색으로 맞춰 baboship의 하이라이트 감성을 이어갑니다. <code>ThemeProvider</code>와 <code>CssBaseline</code>을 통해 다크/라이트 모드의 대비를 유지하면서도 가독성을 살렸습니다.</p>
-</div></section></main><footer>GitHub Pages static build</footer></div></body></html>
+</div>
+<footer class="article-footer">
+<a class="back-link" href="../../../category/development/">&larr; Development로 돌아가기</a>
+</footer>
+</div>
+
+</main>
+<footer class="site-footer">
+<p>Built with <a href="https://github.com/gg582/cwist">cwist</a> + md4c &middot; GitHub Pages</p>
+</footer>
+</div>
+</body>
+</html>

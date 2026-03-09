@@ -1,9 +1,43 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CWIST + WASM 블로그 파이프라인</title><link rel="stylesheet" href="../../../assets/styles.css"><style>:root{--accent-primary:#5b8dff;--accent-secondary:#9cc0ff;}</style></head><body><div class="page-shell"><nav><div class="brand">cwist Material Blog</div><div class="nav-links"><a href="../../../category/welcome/">Welcome</a><a href="../../../category/how-to-contribute/">How to Contribute</a><a class="active" href="../../../category/development/">Development</a><a href="../../../category/software/">Software</a></div></nav><main><section class="card"><a href="../../../category/development/">&larr; Back to Development</a><h1>CWIST + WASM 블로그 파이프라인</h1><p>2024-05-22 &middot; 4 min read</p><div class="post-body"><hr>
-<h2>title: CWIST + WASM 블로그 파이프라인
-date: 2024-05-22
-excerpt: cwist 문자열 엔진과 md4c를 결합한 GitHub Pages 전용 렌더러 소개.
-tags: CWIST, Emscripten, Static
-reading_minutes: 4</h2>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CWIST + WASM 블로그 파이프라인 – Religiya Serdtsa</title>
+<link rel="stylesheet" href="../../../assets/styles.css">
+<style>:root{--accent:#5b8dff;--accent-hover:#9cc0ff;}</style>
+</head>
+<body>
+<div class="site-wrap">
+<header class="site-header">
+<nav class="nav">
+<a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
+<ul class="nav-list">
+<li><a href="../../../category/welcome/">Welcome</a></li>
+<li><a href="../../../category/how-to-contribute/">How to Contribute</a></li>
+<li><a class="active" href="../../../category/development/">Development</a></li>
+<li><a href="../../../category/software/">Software</a></li>
+</ul>
+</nav>
+</header>
+<main class="main">
+<div class="article-wrap">
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/development/">Development</a><span class="bc-sep">/</span><span>CWIST + WASM 블로그 파이프라인</span></nav>
+<header class="article-header">
+<div class="tags">
+<span class="tag">CWIST</span>
+<span class="tag">Emscripten</span>
+<span class="tag">Static</span>
+</div>
+<h1 class="article-title">CWIST + WASM 블로그 파이프라인</h1>
+<div class="article-meta">
+<time>2024-05-22</time>
+<span class="dot">&middot;</span>
+<span>4 min read</span>
+</div>
+</header>
+<div class="divider"></div>
+<div class="article-body">
 <h2>왜 새 파이프라인이 필요했나요?</h2>
 <p>바보쉽 예제처럼 거대한 데이터 파이프를 쓰기에는 깃허브 페이지가 너무 가볍습니다. 서버나 DB 없이도 탐색 가능한 블로그가 필요했고, <strong>cwist의 SString 유틸리티</strong>를 그대로 Wasm으로 옮겨서 마크다운 문자열을 안전하게 다루도록 했습니다.</p>
 <ul>
@@ -21,4 +55,16 @@ reading_minutes: 4</h2>
 <li><strong>다크/라이트 토글</strong>과 로컬스토리지 기억 기능</li>
 </ol>
 <p>필요하면 이 포스트를 복제해 새로운 슬러그 이름으로 저장하면 됩니다. 파일만 추가하면 바로 블로그가 새 섹션을 감지합니다.</p>
-</div></section></main><footer>GitHub Pages static build</footer></div></body></html>
+</div>
+<footer class="article-footer">
+<a class="back-link" href="../../../category/development/">&larr; Development로 돌아가기</a>
+</footer>
+</div>
+
+</main>
+<footer class="site-footer">
+<p>Built with <a href="https://github.com/gg582/cwist">cwist</a> + md4c &middot; GitHub Pages</p>
+</footer>
+</div>
+</body>
+</html>
