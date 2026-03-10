@@ -397,6 +397,13 @@ static void render_nav(blog_catalog_t *catalog, const char *active_category,
         cwist_sstring_append_escaped(out, cat->title);
         cwist_sstring_append(out, "</a></li>\n");
     }
+    /* search link */
+    cwist_sstring_append(out, "<li><a href=\"");
+    cwist_sstring_append(out, root_prefix);
+    cwist_sstring_append(out,
+        "search/\">"
+        "\xea\xb2\x80\xec\x83\x89"   /* 검색 */
+        "</a></li>\n");
     cwist_sstring_append(out,
         "</ul>\n"
         "</nav>\n"
@@ -735,6 +742,122 @@ cleanup:
     cwist_sstring_destroy(page);
 }
 
+/* ── Search index & search page ─────────────────────────────────────────── */
+
+/*
+ * append_json_string — write s as a JSON-encoded double-quoted string.
+ * Escapes: " \ and ASCII control characters.
+ * Non-ASCII UTF-8 bytes are passed through unchanged (valid in JSON).
+ */
+static void append_json_string(cwist_sstring *out, const char *s) {
+    cwist_sstring_append(out, "\"");
+    if (s) {
+        for (const char *p = s; *p; ++p) {
+            unsigned char c = (unsigned char)*p;
+            if      (c == '"')  cwist_sstring_append(out, "\\\"");
+            else if (c == '\\') cwist_sstring_append(out, "\\\\");
+            else if (c == '\n') cwist_sstring_append(out, "\\n");
+            else if (c == '\r') cwist_sstring_append(out, "\\r");
+            else if (c == '\t') cwist_sstring_append(out, "\\t");
+            else if (c < 0x20) {
+                char buf[8];
+                snprintf(buf, sizeof(buf), "\\u%04x", c);
+                cwist_sstring_append(out, buf);
+            } else {
+                char ch[2] = { *p, '\0' };
+                cwist_sstring_append(out, ch);
+            }
+        }
+    }
+    cwist_sstring_append(out, "\"");
+}
+
+/*
+ * build_search_index — write docs/search-index.json.
+ * Each entry: { title, url, summary, tags, date }
+ */
+static void build_search_index(blog_catalog_t *catalog, const char *out_dir) {
+    cwist_sstring *json = cwist_sstring_create();
+    cwist_sstring_append(json, "[\n");
+    bool first = true;
+    for (size_t i = 0; i < catalog->count; ++i) {
+        blog_category_t *cat = &catalog->items[i];
+        if (!cat->id) continue;
+        for (size_t j = 0; j < cat->post_count; ++j) {
+            blog_post_t *post = &cat->posts[j];
+            if (!first) cwist_sstring_append(json, ",\n");
+            first = false;
+            cwist_sstring_append(json, "  {\"title\":");
+            append_json_string(json, post->title ? post->title : "");
+            cwist_sstring_append(json, ",\"url\":\"/post/");
+            cwist_sstring_append(json, cat->id);
+            cwist_sstring_append(json, "/");
+            cwist_sstring_append(json, post->slug ? post->slug : "");
+            cwist_sstring_append(json, "/\",\"summary\":");
+            append_json_string(json, post->excerpt ? post->excerpt : "");
+            cwist_sstring_append(json, ",\"tags\":[");
+            for (size_t t = 0; t < post->tag_count; ++t) {
+                if (t) cwist_sstring_append(json, ",");
+                append_json_string(json, post->tags[t]);
+            }
+            cwist_sstring_append(json, "],\"date\":");
+            append_json_string(json, post->date ? post->date : "");
+            cwist_sstring_append(json, "}");
+        }
+    }
+    cwist_sstring_append(json, "\n]\n");
+
+    char path[PATH_MAX_LEN];
+    snprintf(path, sizeof(path), "%s/search-index.json", out_dir);
+    write_file(path, json->data);
+    cwist_sstring_destroy(json);
+}
+
+/*
+ * build_search_page — generate docs/search/index.html.
+ * The page contains the search UI; JavaScript loads the WASM module
+ * and search-index.json at runtime.
+ */
+static void build_search_page(blog_catalog_t *catalog, const char *out_dir) {
+    cwist_sstring *content = cwist_sstring_create();
+    cwist_sstring *page    = cwist_sstring_create();
+    const char *root = "../";
+
+    cwist_sstring_append(content,
+        "<div class=\"search-wrap\">\n"
+        "<h1 class=\"search-page-title\">"
+        "\xed\x8f\xac\xec\x8a\xa4\xed\x8a\xb8 \xea\xb2\x80\xec\x83\x89"  /* 포스트 검색 */
+        "</h1>\n"
+        "<div class=\"search-box\">\n"
+        "<input type=\"search\" id=\"search-input\" class=\"search-input\""
+        " placeholder=\""
+        "\xea\xb2\x80\xec\x83\x89\xec\x96\xb4\xeb\xa5\xbc"  /* 검색어를 */
+        " "
+        "\xec\x9e\x85\xeb\xa0\xa5\xed\x95\x98\xec\x84\xb8\xec\x9a\x94"  /* 입력하세요 */
+        "...\""
+        " disabled autocomplete=\"off\" spellcheck=\"false\">\n"
+        "</div>\n"
+        "<p id=\"search-no-result\" class=\"search-no-result\" hidden>"
+        "\xea\xb2\xb0\xea\xb3\xbc \xec\x97\x86\xec\x9d\x8c"  /* 결과 없음 */
+        "</p>\n"
+        "<div id=\"search-results\" class=\"search-results\""
+        " role=\"listbox\" aria-live=\"polite\"></div>\n"
+        "</div>\n"
+        "<script src=\"../assets/search-module.js\"></script>\n"
+        "<script src=\"../assets/search-ui.js\"></script>\n");
+
+    render_page(catalog,
+        "\xea\xb2\x80\xec\x83\x89 \xe2\x80\x93 Religiya Serdtsa",  /* 검색 – … */
+        NULL, NULL, NULL, content, root, page);
+
+    char path[PATH_MAX_LEN];
+    snprintf(path, sizeof(path), "%s/search/index.html", out_dir);
+    write_file(path, page->data);
+
+    cwist_sstring_destroy(content);
+    cwist_sstring_destroy(page);
+}
+
 /* ── Asset copy ─────────────────────────────────────────────────────────── */
 
 static void copy_assets(const char *src_css, const char *out_dir) {
@@ -786,6 +909,8 @@ int main(int argc, char **argv) {
         for (size_t j = 0; j < cat->post_count; ++j)
             build_post_page(&catalog, cat, &cat->posts[j], out_dir);
     }
+    build_search_index(&catalog, out_dir);
+    build_search_page(&catalog, out_dir);
 
     free_catalog(&catalog);
     return 0;
