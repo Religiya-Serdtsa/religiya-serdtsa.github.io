@@ -397,6 +397,13 @@ static void render_nav(blog_catalog_t *catalog, const char *active_category,
         cwist_sstring_append_escaped(out, cat->title);
         cwist_sstring_append(out, "</a></li>\n");
     }
+    /* search link */
+    cwist_sstring_append(out, "<li><a href=\"");
+    cwist_sstring_append(out, root_prefix);
+    cwist_sstring_append(out,
+        "search/\">"
+        "\xea\xb2\x80\xec\x83\x89"   /* 검색 */
+        "</a></li>\n");
     cwist_sstring_append(out,
         "</ul>\n"
         "</nav>\n"
@@ -464,9 +471,7 @@ static void build_home(blog_catalog_t *catalog, const char *out_dir) {
         "<p class=\"hero-label\">cwist &middot; static blog</p>\n"
         "<h1 class=\"hero-title\">Religiya Serdtsa</h1>\n"
         "<p class=\"hero-desc\">"
-        "cwist \355\224\204\353\240\210\354\236\204\354\233\214\355\201\254\354\231\200 "
-        "\354\240\225\354\240\201 \354\202\254\354\235\264\355\212\270 \354\203\235\354\204\261\354\227\220 "
-        "\352\264\200\355\225\234 \352\270\260\354\210\240 \353\205\270\355\212\270"
+        "cwist \355\224\204\353\240\210\354\236\204\354\233\214\355\201\254 \354\203\230\355\224\214 \353\270\224\353\241\234\352\267\270"
         "</p>\n"
         "</section>\n");
 
@@ -687,7 +692,34 @@ static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat,
     cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
     cwist_sstring_append(content,
         "\xEB\xA1\x9C \xEB\x8F\x8C\xEC\x95\x84\xEA\xB0\x80\xEA\xB8\xB0"
-        "</a>\n</footer>\n</div>\n");
+        "</a>\n</footer>\n");
+
+    /* comment section */
+    cwist_sstring_append(content,
+        "<section class=\"comment-section\" id=\"comment-section\""
+        " data-slug=\"");
+    cwist_sstring_append(content, cat->id);
+    cwist_sstring_append(content, "/");
+    cwist_sstring_append(content, post->slug ? post->slug : "");
+    cwist_sstring_append(content,
+        "\">\n"
+        "<h2 class=\"comment-section-title\""
+        " id=\"comment-section-title\"></h2>\n"
+        "<div id=\"comment-count\" class=\"comment-count\"></div>\n"
+        "<div id=\"comment-list\" class=\"comment-list\"></div>\n"
+        "<div class=\"comment-form\">\n"
+        "<h3 id=\"comment-form-title\""
+        " class=\"comment-form-title\"></h3>\n"
+        "<p id=\"comment-form-note\""
+        " class=\"comment-form-note\"></p>\n"
+        "<textarea id=\"comment-body\" class=\"comment-textarea\""
+        " rows=\"4\"></textarea>\n"
+        "<button id=\"comment-submit\" class=\"comment-submit\""
+        " type=\"button\"></button>\n"
+        "</div>\n"
+        "</section>\n"
+        "<script src=\"../../../assets/comments.js\"></script>\n"
+        "</div>\n");
 
     char page_title_buf[512];
     snprintf(page_title_buf, sizeof(page_title_buf), "%s – Religiya Serdtsa",
@@ -706,6 +738,122 @@ static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat,
 
 cleanup:
     cwist_sstring_destroy(md_out);
+    cwist_sstring_destroy(content);
+    cwist_sstring_destroy(page);
+}
+
+/* ── Search index & search page ─────────────────────────────────────────── */
+
+/*
+ * append_json_string — write s as a JSON-encoded double-quoted string.
+ * Escapes: " \ and ASCII control characters.
+ * Non-ASCII UTF-8 bytes are passed through unchanged (valid in JSON).
+ */
+static void append_json_string(cwist_sstring *out, const char *s) {
+    cwist_sstring_append(out, "\"");
+    if (s) {
+        for (const char *p = s; *p; ++p) {
+            unsigned char c = (unsigned char)*p;
+            if      (c == '"')  cwist_sstring_append(out, "\\\"");
+            else if (c == '\\') cwist_sstring_append(out, "\\\\");
+            else if (c == '\n') cwist_sstring_append(out, "\\n");
+            else if (c == '\r') cwist_sstring_append(out, "\\r");
+            else if (c == '\t') cwist_sstring_append(out, "\\t");
+            else if (c < 0x20) {
+                char buf[8];
+                snprintf(buf, sizeof(buf), "\\u%04x", c);
+                cwist_sstring_append(out, buf);
+            } else {
+                char ch[2] = { *p, '\0' };
+                cwist_sstring_append(out, ch);
+            }
+        }
+    }
+    cwist_sstring_append(out, "\"");
+}
+
+/*
+ * build_search_index — write docs/search-index.json.
+ * Each entry: { title, url, summary, tags, date }
+ */
+static void build_search_index(blog_catalog_t *catalog, const char *out_dir) {
+    cwist_sstring *json = cwist_sstring_create();
+    cwist_sstring_append(json, "[\n");
+    bool first = true;
+    for (size_t i = 0; i < catalog->count; ++i) {
+        blog_category_t *cat = &catalog->items[i];
+        if (!cat->id) continue;
+        for (size_t j = 0; j < cat->post_count; ++j) {
+            blog_post_t *post = &cat->posts[j];
+            if (!first) cwist_sstring_append(json, ",\n");
+            first = false;
+            cwist_sstring_append(json, "  {\"title\":");
+            append_json_string(json, post->title ? post->title : "");
+            cwist_sstring_append(json, ",\"url\":\"/post/");
+            cwist_sstring_append(json, cat->id);
+            cwist_sstring_append(json, "/");
+            cwist_sstring_append(json, post->slug ? post->slug : "");
+            cwist_sstring_append(json, "/\",\"summary\":");
+            append_json_string(json, post->excerpt ? post->excerpt : "");
+            cwist_sstring_append(json, ",\"tags\":[");
+            for (size_t t = 0; t < post->tag_count; ++t) {
+                if (t) cwist_sstring_append(json, ",");
+                append_json_string(json, post->tags[t]);
+            }
+            cwist_sstring_append(json, "],\"date\":");
+            append_json_string(json, post->date ? post->date : "");
+            cwist_sstring_append(json, "}");
+        }
+    }
+    cwist_sstring_append(json, "\n]\n");
+
+    char path[PATH_MAX_LEN];
+    snprintf(path, sizeof(path), "%s/search-index.json", out_dir);
+    write_file(path, json->data);
+    cwist_sstring_destroy(json);
+}
+
+/*
+ * build_search_page — generate docs/search/index.html.
+ * The page contains the search UI; JavaScript loads the WASM module
+ * and search-index.json at runtime.
+ */
+static void build_search_page(blog_catalog_t *catalog, const char *out_dir) {
+    cwist_sstring *content = cwist_sstring_create();
+    cwist_sstring *page    = cwist_sstring_create();
+    const char *root = "../";
+
+    cwist_sstring_append(content,
+        "<div class=\"search-wrap\">\n"
+        "<h1 class=\"search-page-title\">"
+        "\xed\x8f\xac\xec\x8a\xa4\xed\x8a\xb8 \xea\xb2\x80\xec\x83\x89"  /* 포스트 검색 */
+        "</h1>\n"
+        "<div class=\"search-box\">\n"
+        "<input type=\"search\" id=\"search-input\" class=\"search-input\""
+        " placeholder=\""
+        "\xea\xb2\x80\xec\x83\x89\xec\x96\xb4\xeb\xa5\xbc"  /* 검색어를 */
+        " "
+        "\xec\x9e\x85\xeb\xa0\xa5\xed\x95\x98\xec\x84\xb8\xec\x9a\x94"  /* 입력하세요 */
+        "...\""
+        " disabled autocomplete=\"off\" spellcheck=\"false\">\n"
+        "</div>\n"
+        "<p id=\"search-no-result\" class=\"search-no-result\" hidden>"
+        "\xea\xb2\xb0\xea\xb3\xbc \xec\x97\x86\xec\x9d\x8c"  /* 결과 없음 */
+        "</p>\n"
+        "<div id=\"search-results\" class=\"search-results\""
+        " role=\"listbox\" aria-live=\"polite\"></div>\n"
+        "</div>\n"
+        "<script src=\"../assets/search-module.js\"></script>\n"
+        "<script src=\"../assets/search-ui.js\"></script>\n");
+
+    render_page(catalog,
+        "\xea\xb2\x80\xec\x83\x89 \xe2\x80\x93 Religiya Serdtsa",  /* 검색 – … */
+        NULL, NULL, NULL, content, root, page);
+
+    char path[PATH_MAX_LEN];
+    snprintf(path, sizeof(path), "%s/search/index.html", out_dir);
+    write_file(path, page->data);
+
     cwist_sstring_destroy(content);
     cwist_sstring_destroy(page);
 }
@@ -761,6 +909,8 @@ int main(int argc, char **argv) {
         for (size_t j = 0; j < cat->post_count; ++j)
             build_post_page(&catalog, cat, &cat->posts[j], out_dir);
     }
+    build_search_index(&catalog, out_dir);
+    build_search_page(&catalog, out_dir);
 
     free_catalog(&catalog);
     return 0;
