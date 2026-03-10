@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CWIST + WASM 블로그 파이프라인 – Religiya Serdtsa</title>
+<title>블로그 운영 공지 – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
 <style>:root{--accent:#a84a43;--accent-hover:#cf8a7e;}</style>
 </head>
@@ -23,39 +23,33 @@
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/post/">Post</a><span class="bc-sep">/</span><span>CWIST + WASM 블로그 파이프라인</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/post/">Post</a><span class="bc-sep">/</span><span>블로그 운영 공지</span></nav>
 <header class="article-header">
 <div class="tags">
-<span class="tag">CWIST</span>
-<span class="tag">Emscripten</span>
-<span class="tag">Static</span>
+<span class="tag">Notice</span>
+<span class="tag">Operations</span>
+<span class="tag">Blog</span>
 </div>
-<h1 class="article-title">CWIST + WASM 블로그 파이프라인</h1>
+<h1 class="article-title">블로그 운영 공지</h1>
 <div class="article-meta">
 <time>2024-05-22</time>
 <span class="dot">&middot;</span>
-<span>4 min read</span>
+<span>2 min read</span>
 </div>
 </header>
 <div class="divider"></div>
 <div class="article-body">
-<h2>왜 새 파이프라인이 필요했나요?</h2>
-<p>바보쉽 예제처럼 거대한 데이터 파이프를 쓰기에는 깃허브 페이지가 너무 가볍습니다. 서버나 DB 없이도 탐색 가능한 블로그가 필요했고, <strong>cwist의 SString 유틸리티</strong>를 그대로 Wasm으로 옮겨서 마크다운 문자열을 안전하게 다루도록 했습니다.</p>
+<h1>블로그 운영 공지</h1>
+<p>이 카테고리는 <strong>Religiya Serdtsa</strong> 블로그 운영과 관련된 공지 사항을 모아 둡니다.</p>
+<h2>공지 유형</h2>
 <ul>
-<li>Emscripten으로 컴파일된 커널이 브라우저 메모리에서 바로 동작합니다.</li>
-<li>cwist의 오류 컨테이너를 그대로 써서 실패 시 메시지를 JSON 없이도 추적합니다.</li>
-<li>md4c를 함께 빌드해 GitHub 호환 문법과 테이블, 체크리스트, 수학 스팬을 지원합니다.</li>
+<li><strong>플랫폼 변경</strong>: 제너레이터 업그레이드, 빌드 방식 변경, 의존성 갱신</li>
+<li><strong>구조 개편</strong>: 카테고리 추가·삭제, URL 변경, 포스트 이동</li>
+<li><strong>정책 안내</strong>: 기여 방법, 포스트 작성 규칙, 태그 사용 기준</li>
 </ul>
-<h2>깃허브 블로그에 최적화</h2>
-<p>모든 포스트는 <code>posts/&lt;카테고리&gt;/*.md</code>에 저장되며, 헤더에 노출되는 카테고리 역시 폴더 구조를 따릅니다. <code>categories.cfg</code>에서 각 폴더의 메타데이터(제목, 설명, 강조 색상, 순서)를 정의하고 GitHub Actions가 <code>docs/</code> 산출물을 배포합니다. 필요한 경우 YAML 프런트 매터를 포함하면 정적 제너레이터가 자동으로 HTML을 갱신합니다.</p>
-<h2>한눈에 보는 특징</h2>
-<ol>
-<li><strong>DB 없이도</strong> 파일만으로 컨텐츠를 관리</li>
-<li><strong>cwist 런타임</strong>을 Wasm으로 재사용해 C 코드 자산을 그대로 살림</li>
-<li><strong>머터리얼 UI</strong>의 레이아웃과 주황색 하이라이트로 브랜드 통일</li>
-<li><strong>다크/라이트 토글</strong>과 로컬스토리지 기억 기능</li>
-</ol>
-<p>필요하면 이 포스트를 복제해 새로운 슬러그 이름으로 저장하면 됩니다. 파일만 추가하면 바로 블로그가 새 섹션을 감지합니다.</p>
+<h2>현재 플랫폼</h2>
+<p>이 블로그는 <code>bin/bloggen</code> — cwist sstring + md4c 기반 C 정적 제너레이터로 구동됩니다. GitHub Actions가 <code>posts/</code> 디렉터리와 <code>categories.cfg</code>를 읽어 <code>docs/</code>에 HTML을 생성하고, GitHub Pages가 서빙합니다.</p>
+<p>변경 사항이 생기면 이 카테고리에 공지합니다.</p>
 </div>
 <footer class="article-footer">
 <a class="back-link" href="../../../category/post/">&larr; Post로 돌아가기</a>

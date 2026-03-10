@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Emscripten과 Material UI의 조합 – Religiya Serdtsa</title>
+<title>Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지 – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
 <style>:root{--accent:#2f3a4a;--accent-hover:#6f7b89;}</style>
 </head>
@@ -23,14 +23,15 @@
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/music/">Music</a><span class="bc-sep">/</span><span>Emscripten과 Material UI의 조합</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/music/">Music</a><span class="bc-sep">/</span><span>Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지</span></nav>
 <header class="article-header">
 <div class="tags">
-<span class="tag">Material UI</span>
-<span class="tag">WASM</span>
-<span class="tag">React</span>
+<span class="tag">Music</span>
+<span class="tag">Culture</span>
+<span class="tag">Punk</span>
+<span class="tag">Baroque</span>
 </div>
-<h1 class="article-title">Emscripten과 Material UI의 조합</h1>
+<h1 class="article-title">Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지</h1>
 <div class="article-meta">
 <time>2024-05-23</time>
 <span class="dot">&middot;</span>
@@ -39,24 +40,44 @@
 </header>
 <div class="divider"></div>
 <div class="article-body">
-<h1>Emscripten과 Material UI의 조합</h1>
-<p>GitHub Pages에서는 서버 사이드 렌더러를 올릴 수 없기 때문에, 정적인 빌드와 브라우저 내부 연산을 조합해야 합니다. 이번 블로그는 다음과 같은 순서로 로드됩니다.</p>
-<pre><code class="language-mermaid">graph TD;
-  Markdown[Markdown 파일] --&gt;|fetch| JS[Material UI SPA];
-  JS --&gt;|텍스트 전달| Wasm[cwist Wasm 커널];
-  Wasm --&gt;|HTML 반환| JS;
-  JS --&gt; DOM[렌더링]
-</code></pre>
-<ol>
-<li>(당시 구조 기준) Material UI 앱은 <code>posts/catalog.json</code>을 먼저 읽어 카테고리와 메타데이터를 가져왔지만, 현재 버전에서는 <code>categories.cfg</code>와 프런트 매터가 같은 역할을 합니다.</li>
-<li>사용자가 카드를 클릭하면 실제 <code>.md</code> 파일을 fetch 합니다.</li>
-<li>Emscripten으로 빌드된 cwist 런타임이 문자열을 받아 md4c로 HTML을 생성합니다.</li>
-<li>결과를 React 상태로 주입하여 안전하게 표기합니다.</li>
-</ol>
+<h1>Music 카테고리 소개</h1>
+<p>이 카테고리는 <strong>음악과 문화</strong>를 다룹니다. 장르의 경계를 넘어 펑크의 저항 정신부터 바로크의 정교한 대위법까지, 음악이 품은 다양한 미학과 역사를 탐구합니다.</p>
+<h2>다루는 범위</h2>
+<table>
+<thead>
+<tr>
+<th>시대·장르</th>
+<th>키워드</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>바로크 (1600–1750)</td>
+<td>통주저음, 대위법, 바흐, 헨델, 비발디</td>
+</tr>
+<tr>
+<td>고전·낭만</td>
+<td>소나타 형식, 교향곡, 베토벤, 슈베르트</td>
+</tr>
+<tr>
+<td>20세기 아방가르드</td>
+<td>무조음악, 실험, 케이지, 스토크하우젠</td>
+</tr>
+<tr>
+<td>펑크·포스트펑크</td>
+<td>DIY 정신, 미니멀리즘, 섹스 피스톨즈, 조이 디비전</td>
+</tr>
+<tr>
+<td>인디·얼터너티브</td>
+<td>독립 음반사, 로파이 사운드, 슈게이징</td>
+</tr>
+</tbody>
+</table>
+<h2>음악을 읽는 방법</h2>
+<p>음악은 듣는 것이지만, <strong>읽을 수도</strong> 있습니다. 악보의 기호, 앨범 라이너 노트, 평론가의 언어를 통해 음악을 새로운 각도에서 접근하는 글을 올립니다.</p>
 <blockquote>
-<p><strong>Tip</strong>: 새 글을 작성할 때는 <code>categories.cfg</code>에 카테고리 정보를 추가하고, <code>posts/&lt;카테고리&gt;/</code>에 프런트 매터가 포함된 <code>.md</code> 파일을 저장한 뒤 <code>make static-site</code>만 실행하면 됩니다.</p>
+<p>&quot;펑크는 음악이 아니라 태도다&quot; — 그 태도가 어떻게 바로크의 엄격함과 통하는지 이 카테고리에서 살펴봅니다.</p>
 </blockquote>
-<p>Material UI 테마는 <code>createTheme</code>로 생성하며 <code>palette.primary.main</code>을 주황색으로 맞춰 baboship의 하이라이트 감성을 이어갑니다. <code>ThemeProvider</code>와 <code>CssBaseline</code>을 통해 다크/라이트 모드의 대비를 유지하면서도 가독성을 살렸습니다.</p>
 </div>
 <footer class="article-footer">
 <a class="back-link" href="../../../category/music/">&larr; Music로 돌아가기</a>

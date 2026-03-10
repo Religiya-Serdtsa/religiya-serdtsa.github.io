@@ -1,28 +1,27 @@
 ---
-title: Emscripten과 Material UI의 조합
+title: Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지
 date: 2024-05-23
-excerpt: Material UI SPA와 Wasm 커널이 협업하는 전체 변환 경로.
-tags: Material UI, WASM, React
+excerpt: 음악과 문화, 펑크부터 바로크까지
+tags: Music, Culture, Punk, Baroque
 reading_minutes: 3
 ---
 
-# Emscripten과 Material UI의 조합
+# Music 카테고리 소개
 
-GitHub Pages에서는 서버 사이드 렌더러를 올릴 수 없기 때문에, 정적인 빌드와 브라우저 내부 연산을 조합해야 합니다. 이번 블로그는 다음과 같은 순서로 로드됩니다.
+이 카테고리는 **음악과 문화**를 다룹니다. 장르의 경계를 넘어 펑크의 저항 정신부터 바로크의 정교한 대위법까지, 음악이 품은 다양한 미학과 역사를 탐구합니다.
 
-```mermaid
-graph TD;
-  Markdown[Markdown 파일] -->|fetch| JS[Material UI SPA];
-  JS -->|텍스트 전달| Wasm[cwist Wasm 커널];
-  Wasm -->|HTML 반환| JS;
-  JS --> DOM[렌더링]
-```
+## 다루는 범위
 
-1. (당시 구조 기준) Material UI 앱은 `posts/catalog.json`을 먼저 읽어 카테고리와 메타데이터를 가져왔지만, 현재 버전에서는 `categories.cfg`와 프런트 매터가 같은 역할을 합니다.
-2. 사용자가 카드를 클릭하면 실제 `.md` 파일을 fetch 합니다.
-3. Emscripten으로 빌드된 cwist 런타임이 문자열을 받아 md4c로 HTML을 생성합니다.
-4. 결과를 React 상태로 주입하여 안전하게 표기합니다.
+| 시대·장르 | 키워드 |
+|-----------|--------|
+| 바로크 (1600–1750) | 통주저음, 대위법, 바흐, 헨델, 비발디 |
+| 고전·낭만 | 소나타 형식, 교향곡, 베토벤, 슈베르트 |
+| 20세기 아방가르드 | 무조음악, 실험, 케이지, 스토크하우젠 |
+| 펑크·포스트펑크 | DIY 정신, 미니멀리즘, 섹스 피스톨즈, 조이 디비전 |
+| 인디·얼터너티브 | 독립 음반사, 로파이 사운드, 슈게이징 |
 
-> **Tip**: 새 글을 작성할 때는 `categories.cfg`에 카테고리 정보를 추가하고, `posts/<카테고리>/`에 프런트 매터가 포함된 `.md` 파일을 저장한 뒤 `make static-site`만 실행하면 됩니다.
+## 음악을 읽는 방법
 
-Material UI 테마는 `createTheme`로 생성하며 `palette.primary.main`을 주황색으로 맞춰 baboship의 하이라이트 감성을 이어갑니다. `ThemeProvider`와 `CssBaseline`을 통해 다크/라이트 모드의 대비를 유지하면서도 가독성을 살렸습니다.
+음악은 듣는 것이지만, **읽을 수도** 있습니다. 악보의 기호, 앨범 라이너 노트, 평론가의 언어를 통해 음악을 새로운 각도에서 접근하는 글을 올립니다.
+
+> "펑크는 음악이 아니라 태도다" — 그 태도가 어떻게 바로크의 엄격함과 통하는지 이 카테고리에서 살펴봅니다.
