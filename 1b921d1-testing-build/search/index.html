@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>검색 – Religiya Serdtsa</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<div class="site-wrap">
+<header class="site-header">
+<nav class="nav">
+<a class="brand" href="../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
+<ul class="nav-list">
+<li><a href="../category/software/">Software</a></li>
+<li><a href="../category/post/">Post</a></li>
+<li><a href="../category/general/">General</a></li>
+<li><a href="../category/music/">Music</a></li>
+<li><a href="../category/culture/">Culture</a></li>
+<li><a href="../search/">검색</a></li>
+</ul>
+</nav>
+</header>
+<main class="main">
+<div class="search-wrap">
+<h1 class="search-page-title">포스트 검색</h1>
+<div class="search-box">
+<input type="search" id="search-input" class="search-input" placeholder="검색어를 입력하세요..." disabled autocomplete="off" spellcheck="false">
+</div>
+<p id="search-no-result" class="search-no-result" hidden>결과 없음</p>
+<div id="search-results" class="search-results" role="listbox" aria-live="polite"></div>
+</div>
+<script src="../assets/search-module.js"></script>
+<script src="../assets/search-ui.js"></script>
+
+</main>
+<footer class="site-footer">
+<p>Built with <a href="https://github.com/gg582/cwist">cwist</a> + md4c &middot; GitHub Pages</p>
+</footer>
+</div>
+</body>
+</html>
