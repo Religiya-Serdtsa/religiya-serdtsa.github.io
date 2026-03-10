@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Welcome to the cwist Material UI Blog – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
-<style>:root{--accent:#ff915d;--accent-hover:#ffc371;}</style>
+<style>:root{--accent:#5b8dff;--accent-hover:#9cc0ff;}</style>
 </head>
 <body>
 <div class="site-wrap">
@@ -13,16 +13,17 @@
 <nav class="nav">
 <a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
 <ul class="nav-list">
-<li><a class="active" href="../../../category/welcome/">Welcome</a></li>
-<li><a href="../../../category/how-to-contribute/">How to Contribute</a></li>
-<li><a href="../../../category/development/">Development</a></li>
 <li><a href="../../../category/software/">Software</a></li>
+<li><a href="../../../category/post/">Post</a></li>
+<li><a class="active" href="../../../category/general/">General</a></li>
+<li><a href="../../../category/music/">Music</a></li>
+<li><a href="../../../category/culture/">Culture</a></li>
 </ul>
 </nav>
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/welcome/">Welcome</a><span class="bc-sep">/</span><span>Welcome to the cwist Material UI Blog</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/general/">General</a><span class="bc-sep">/</span><span>Welcome to the cwist Material UI Blog</span></nav>
 <header class="article-header">
 <div class="tags">
 <span class="tag">Welcome</span>
@@ -54,12 +55,12 @@
 <tbody>
 <tr>
 <td>카테고리 정의</td>
-<td><code>docs/categories.cfg</code></td>
+<td><code>categories.cfg</code></td>
 <td>INI 형식으로 제목, 설명, accent 색상, 순서를 선언</td>
 </tr>
 <tr>
 <td>데이터</td>
-<td><code>docs/posts/&lt;카테고리&gt;/슬러그.md</code></td>
+<td><code>posts/&lt;카테고리&gt;/슬러그.md</code></td>
 <td>YAML 프런트 매터(<code>title</code>, <code>date</code>, <code>tags</code>, <code>reading_minutes</code>)와 Markdown 본문</td>
 </tr>
 <tr>
@@ -74,15 +75,15 @@
 </tr>
 <tr>
 <td>배포</td>
-<td>GitHub Pages</td>
-<td><code>docs/</code> 폴더를 그대로 push → Pages가 호스팅</td>
+<td>GitHub Pages Actions</td>
+<td>루트 소스로 <code>docs/</code> 산출물을 생성해 Pages에 업로드</td>
 </tr>
 </tbody>
 </table>
 <h2>2. 빠른 시작 순서</h2>
 <ol>
-<li><code>docs/categories.cfg</code>에 카테고리 메타데이터를 추가하거나 수정합니다.</li>
-<li><code>docs/posts/&lt;카테고리&gt;/새-슬러그.md</code>를 만들고 YAML 프런트 매터를 채운 뒤 내용을 작성합니다.</li>
+<li><code>categories.cfg</code>에 카테고리 메타데이터를 추가하거나 수정합니다.</li>
+<li><code>posts/&lt;카테고리&gt;/새-슬러그.md</code>를 만들고 YAML 프런트 매터를 채운 뒤 내용을 작성합니다.</li>
 <li><code>make static-site</code>를 실행해 <code>docs/</code> 아래에 <code>index.html</code>, <code>category/&lt;id&gt;/</code>, <code>post/&lt;category&gt;/&lt;slug&gt;/</code>가 생성되는지 확인합니다. (프로젝트 페이지라면 <code>BLOG_BASE_PATH=/repo/ make static-site</code> 사용)</li>
 <li><code>docs/index.html</code>을 브라우저로 열어 결과를 검토합니다.</li>
 <li>변경 사항을 커밋하고 GitHub Pages 브랜치에 푸시합니다.</li>
@@ -95,14 +96,14 @@
 </ul>
 <h2>4. 다음에 읽을 문서</h2>
 <ul>
-<li><a href="../how-to-contribute/contribution-workflow.md">How to Contribute</a> — 포스트 작성부터 PR까지 절차</li>
-<li><a href="../development/emscripten-material-ui.md">Development</a> — (히스토리) React + Wasm 파이프라인 정리</li>
+<li><a href="../../culture/contribution-workflow/">Culture</a> — 포스트 작성부터 PR까지 절차</li>
+<li><a href="../../music/emscripten-material-ui/">Music</a> — (히스토리) React + Wasm 파이프라인 정리</li>
 <li><a href="../software/dark-mode-highlights.md">Software</a> — UI/UX 하이라이트 전략</li>
 </ul>
 <p>필요하면 이 문서를 복제해 다른 카테고리의 인트로를 빠르게 만들 수 있습니다. 제목, 표준 섹션(개요/절차/원칙/다음 단계)을 유지하면 독자 경험이 일관됩니다.</p>
 </div>
 <footer class="article-footer">
-<a class="back-link" href="../../../category/welcome/">&larr; Welcome로 돌아가기</a>
+<a class="back-link" href="../../../category/general/">&larr; General로 돌아가기</a>
 </footer>
 </div>
 

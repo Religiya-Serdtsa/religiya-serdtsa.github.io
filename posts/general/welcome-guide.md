@@ -14,16 +14,16 @@ reading_minutes: 4
 
 | Layer | 구성 요소 | 설명 |
 |-------|-----------|------|
-| 카테고리 정의 | `docs/categories.cfg` | INI 형식으로 제목, 설명, accent 색상, 순서를 선언 |
-| 데이터 | `docs/posts/<카테고리>/슬러그.md` | YAML 프런트 매터(`title`, `date`, `tags`, `reading_minutes`)와 Markdown 본문 |
+| 카테고리 정의 | `categories.cfg` | INI 형식으로 제목, 설명, accent 색상, 순서를 선언 |
+| 데이터 | `posts/<카테고리>/슬러그.md` | YAML 프런트 매터(`title`, `date`, `tags`, `reading_minutes`)와 Markdown 본문 |
 | 렌더링 | `bin/bloggen` | md4c + C 기반 제너레이터가 HTML을 생성 (서버 필요 없음) |
 | 스타일 | `assets/styles.css` | Cards/nav/타이포 등 공통 테마, 생성 시 `docs/assets/styles.css`로 복사 |
-| 배포 | GitHub Pages | `docs/` 폴더를 그대로 push → Pages가 호스팅 |
+| 배포 | GitHub Pages Actions | 루트 소스로 `docs/` 산출물을 생성해 Pages에 업로드 |
 
 ## 2. 빠른 시작 순서
 
-1. `docs/categories.cfg`에 카테고리 메타데이터를 추가하거나 수정합니다.
-2. `docs/posts/<카테고리>/새-슬러그.md`를 만들고 YAML 프런트 매터를 채운 뒤 내용을 작성합니다.
+1. `categories.cfg`에 카테고리 메타데이터를 추가하거나 수정합니다.
+2. `posts/<카테고리>/새-슬러그.md`를 만들고 YAML 프런트 매터를 채운 뒤 내용을 작성합니다.
 3. `make static-site`를 실행해 `docs/` 아래에 `index.html`, `category/<id>/`, `post/<category>/<slug>/`가 생성되는지 확인합니다. (프로젝트 페이지라면 `BLOG_BASE_PATH=/repo/ make static-site` 사용)
 4. `docs/index.html`을 브라우저로 열어 결과를 검토합니다.
 5. 변경 사항을 커밋하고 GitHub Pages 브랜치에 푸시합니다.
@@ -36,8 +36,8 @@ reading_minutes: 4
 
 ## 4. 다음에 읽을 문서
 
-- [How to Contribute](../how-to-contribute/contribution-workflow.md) — 포스트 작성부터 PR까지 절차
-- [Development](../development/emscripten-material-ui.md) — (히스토리) React + Wasm 파이프라인 정리
+- [Culture](../../culture/contribution-workflow/) — 포스트 작성부터 PR까지 절차
+- [Music](../../music/emscripten-material-ui/) — (히스토리) React + Wasm 파이프라인 정리
 - [Software](../software/dark-mode-highlights.md) — UI/UX 하이라이트 전략
 
 필요하면 이 문서를 복제해 다른 카테고리의 인트로를 빠르게 만들 수 있습니다. 제목, 표준 섹션(개요/절차/원칙/다음 단계)을 유지하면 독자 경험이 일관됩니다.
