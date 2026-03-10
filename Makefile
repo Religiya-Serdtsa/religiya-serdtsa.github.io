@@ -23,6 +23,9 @@ STATIC_INCLUDES := \
 static-site: $(STATIC_GENERATOR)
 	rm -rf docs
 	./$(STATIC_GENERATOR) categories.cfg posts assets/styles.css docs
+	cp assets/comments.js docs/assets/comments.js
+	mkdir -p docs/data
+	if [ -f data/comments.json ]; then cp data/comments.json docs/data/comments.json; else echo '{}' > docs/data/comments.json; fi
 	touch docs/.nojekyll
 
 $(STATIC_GENERATOR): $(STATIC_SRCS)

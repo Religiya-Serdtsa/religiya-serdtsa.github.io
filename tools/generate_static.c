@@ -685,7 +685,34 @@ static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat,
     cwist_sstring_append_escaped(content, cat->title ? cat->title : "");
     cwist_sstring_append(content,
         "\xEB\xA1\x9C \xEB\x8F\x8C\xEC\x95\x84\xEA\xB0\x80\xEA\xB8\xB0"
-        "</a>\n</footer>\n</div>\n");
+        "</a>\n</footer>\n");
+
+    /* comment section */
+    cwist_sstring_append(content,
+        "<section class=\"comment-section\" id=\"comment-section\""
+        " data-slug=\"");
+    cwist_sstring_append(content, cat->id);
+    cwist_sstring_append(content, "/");
+    cwist_sstring_append(content, post->slug ? post->slug : "");
+    cwist_sstring_append(content,
+        "\">\n"
+        "<h2 class=\"comment-section-title\""
+        " id=\"comment-section-title\"></h2>\n"
+        "<div id=\"comment-count\" class=\"comment-count\"></div>\n"
+        "<div id=\"comment-list\" class=\"comment-list\"></div>\n"
+        "<div class=\"comment-form\">\n"
+        "<h3 id=\"comment-form-title\""
+        " class=\"comment-form-title\"></h3>\n"
+        "<p id=\"comment-form-note\""
+        " class=\"comment-form-note\"></p>\n"
+        "<textarea id=\"comment-body\" class=\"comment-textarea\""
+        " rows=\"4\"></textarea>\n"
+        "<button id=\"comment-submit\" class=\"comment-submit\""
+        " type=\"button\"></button>\n"
+        "</div>\n"
+        "</section>\n"
+        "<script src=\"../../../assets/comments.js\"></script>\n"
+        "</div>\n");
 
     char page_title_buf[512];
     snprintf(page_title_buf, sizeof(page_title_buf), "%s – Religiya Serdtsa",
