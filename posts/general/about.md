@@ -1,6 +1,6 @@
 ---
 title: Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내
-date: 2024-05-25
+date: 2026-03-10
 excerpt: 공지, 소개, 전체 블로그 안내
 tags: Welcome, Guide, Overview, General
 reading_minutes: 3

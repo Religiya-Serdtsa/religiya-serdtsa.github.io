@@ -1,6 +1,6 @@
 ---
 title: 블로그 운영 공지
-date: 2024-05-22
+date: 2026-03-10
 excerpt: 블로그 운영 공지
 tags: Notice, Operations, Blog
 reading_minutes: 2

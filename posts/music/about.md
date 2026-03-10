@@ -1,6 +1,6 @@
 ---
 title: Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지
-date: 2024-05-23
+date: 2026-03-10
 excerpt: 음악과 문화, 펑크부터 바로크까지
 tags: Music, Culture, Punk, Baroque
 reading_minutes: 3
