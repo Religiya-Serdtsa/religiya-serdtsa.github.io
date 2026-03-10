@@ -38,6 +38,6 @@ reading_minutes: 4
 
 - [Culture](../../culture/contribution-workflow/) — 포스트 작성부터 PR까지 절차
 - [Music](../../music/emscripten-material-ui/) — (히스토리) React + Wasm 파이프라인 정리
-- [Software](../software/dark-mode-highlights.md) — UI/UX 하이라이트 전략
+- [Software](../../software/dark-mode-highlights/) — UI/UX 하이라이트 전략
 
 필요하면 이 문서를 복제해 다른 카테고리의 인트로를 빠르게 만들 수 있습니다. 제목, 표준 섹션(개요/절차/원칙/다음 단계)을 유지하면 독자 경험이 일관됩니다.
