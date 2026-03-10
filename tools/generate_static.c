@@ -24,6 +24,7 @@ typedef struct {
     char *title;
     char *date;
     char *excerpt;
+    char *body;
     char **tags;
     size_t tag_count;
     int reading_minutes;
@@ -125,7 +126,7 @@ static void free_catalog(blog_catalog_t *catalog) {
         for (size_t j = 0; j < cat->post_count; ++j) {
             blog_post_t *post = &cat->posts[j];
             free(post->slug); free(post->title); free(post->date);
-            free(post->excerpt); free(post->source_path);
+            free(post->excerpt); free(post->body); free(post->source_path);
             for (size_t t = 0; t < post->tag_count; ++t) free(post->tags[t]);
             free(post->tags);
         }
@@ -282,15 +283,16 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
             free(content); continue;
         }
         if (!post->title) post->title = strdup_safe(post->slug);
+        const char *body_ptr = content + body_offset;
         if (!post->excerpt) {
-            const char *body = content + body_offset;
-            size_t elen = strlen(body);
+            size_t elen = strlen(body_ptr);
             if (elen > MAX_EXCERPT_LEN) elen = MAX_EXCERPT_LEN;
             char *exc = malloc(elen + 1);
-            memcpy(exc, body, elen);
+            memcpy(exc, body_ptr, elen);
             exc[elen] = '\0';
             post->excerpt = exc;
         }
+        post->body = strdup_safe(body_ptr);
         post->source_path = strdup_safe(file_path);
         free(content);
         count = new_count;
@@ -774,7 +776,7 @@ static void append_json_string(cwist_sstring *out, const char *s) {
 
 /*
  * build_search_index — write docs/search-index.json.
- * Each entry: { title, url, summary, tags, date }
+ * Each entry: { title, url, summary, tags, date, body }
  */
 static void build_search_index(blog_catalog_t *catalog, const char *out_dir) {
     cwist_sstring *json = cwist_sstring_create();
@@ -802,6 +804,8 @@ static void build_search_index(blog_catalog_t *catalog, const char *out_dir) {
             }
             cwist_sstring_append(json, "],\"date\":");
             append_json_string(json, post->date ? post->date : "");
+            cwist_sstring_append(json, ",\"body\":");
+            append_json_string(json, post->body ? post->body : "");
             cwist_sstring_append(json, "}");
         }
     }

@@ -3,12 +3,12 @@
  *
  * Exports a single function:
  *
- *   float cwist_score(query, title, tags, summary)
+ *   float cwist_score(query, title, tags, summary, body)
  *
  * Returns a relevance score >= 0.0.  Higher means a better match.
  * Score == 0.0 means no match at all.
  *
- * Weights:  title 3 pts · tags 2 pts · summary 1 pt
+ * Weights:  title 3 pts · tags 2 pts · summary 1 pt · body 1 pt
  *
  * Algorithm:
  *   Case-insensitive substring search (ASCII).
@@ -66,12 +66,14 @@ WASM_EXPORT
 float cwist_score(const char *query,
                   const char *title,
                   const char *tags,
-                  const char *summary) {
+                  const char *summary,
+                  const char *body) {
     if (!query || !*query) return 0.0f;
 
     float score = 0.0f;
     if (title   && icontains(title,   query)) score += 3.0f;
     if (tags    && icontains(tags,    query)) score += 2.0f;
     if (summary && icontains(summary, query)) score += 1.0f;
+    if (body    && icontains(body,    query)) score += 1.0f;
     return score;
 }

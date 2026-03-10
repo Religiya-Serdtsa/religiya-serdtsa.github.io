@@ -20,7 +20,7 @@
 
   if (!inputEl || !resultsEl) return;
 
-  var index   = null;   /* Array<{title,url,summary,tags,date}> */
+  var index   = null;   /* Array<{title,url,summary,tags,date,body}> */
   var wasmMod = null;   /* CwistSearchModule instance, or null  */
   var cursor  = -1;     /* keyboard-navigation index            */
 
@@ -77,8 +77,8 @@
     if (wasmMod) {
       return wasmMod.ccall(
         'cwist_score', 'number',
-        ['string', 'string', 'string', 'string'],
-        [query, post.title || '', tagsStr, post.summary || '']
+        ['string', 'string', 'string', 'string', 'string'],
+        [query, post.title || '', tagsStr, post.summary || '', post.body || '']
       );
     }
     /* Pure-JS fallback (case-insensitive indexOf) */
@@ -87,6 +87,7 @@
     if ((post.title   || '').toLowerCase().indexOf(q) !== -1) s += 3;
     if (tagsStr.toLowerCase().indexOf(q)               !== -1) s += 2;
     if ((post.summary || '').toLowerCase().indexOf(q)  !== -1) s += 1;
+    if ((post.body    || '').toLowerCase().indexOf(q)  !== -1) s += 1;
     return s;
   }
 
