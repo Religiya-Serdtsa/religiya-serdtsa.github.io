@@ -1,7 +1,8 @@
 [
-  {"title":"Software 카테고리 소개 — 개발 도구·UI/UX·알고리즘·Punkware","url":"/post/software/dark-mode-highlights/","summary":"개발 도구, UI/UX, 알고리즘, 'Punkware' 소개","tags":["Software","Tools","UI/UX","Algorithm","Punkware"],"date":"2024-05-24"},
-  {"title":"블로그 운영 공지","url":"/post/post/platform-pipeline/","summary":"블로그 운영 공지","tags":["Notice","Operations","Blog"],"date":"2024-05-22"},
-  {"title":"Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내","url":"/post/general/welcome-guide/","summary":"공지, 소개, 전체 블로그 안내","tags":["Welcome","Guide","Overview","General"],"date":"2024-05-25"},
-  {"title":"Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지","url":"/post/music/emscripten-material-ui/","summary":"음악과 문화, 펑크부터 바로크까지","tags":["Music","Culture","Punk","Baroque"],"date":"2024-05-23"},
-  {"title":"Culture 카테고리 소개 — 세계의 좋은 취향과 문화들","url":"/post/culture/contribution-workflow/","summary":"세계의 좋은 취향과 문화들","tags":["Culture","Lifestyle","Art","Travel","Food"],"date":"2024-05-25"}
+  {"title":"Software 카테고리 소개 — 개발 도구·UI/UX·알고리즘·Punkware","url":"/post/software/about/","summary":"개발 도구, UI/UX, 알고리즘, 'Punkware' 소개","tags":["Software","Tools","UI/UX","Algorithm","Punkware"],"date":"2024-06-10"},
+  {"title":"Punkware - 어떤 컨셉트인가요?","url":"/post/software/about-punkware-step-1/","summary":"개발과 펑크 정신, 그리고 최소 구현체","tags":["Software","Tools","UI/UX","Algorithm","Punkware"],"date":"2024-06-10"},
+  {"title":"블로그 운영 공지","url":"/post/post/about/","summary":"블로그 운영 공지","tags":["Notice","Operations","Blog"],"date":"2026-03-10"},
+  {"title":"Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내","url":"/post/general/about/","summary":"공지, 소개, 전체 블로그 안내","tags":["Welcome","Guide","Overview","General"],"date":"2026-03-10"},
+  {"title":"Music 카테고리 소개 — 음악과 문화, 펑크부터 바로크까지","url":"/post/music/about/","summary":"음악과 문화, 펑크부터 바로크까지","tags":["Music","Culture","Punk","Baroque"],"date":"2026-03-10"},
+  {"title":"Culture 카테고리 소개 — 세계의 좋은 취향과 문화들","url":"/post/culture/about/","summary":"세계의 좋은 취향과 문화들","tags":["Culture","Lifestyle","Art","Travel","Food"],"date":"2025-03-10"}
 ]
