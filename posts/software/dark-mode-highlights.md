@@ -1,37 +1,28 @@
 ---
-title: 주황색 하이라이트와 다크 모드 UX
+title: Software 카테고리 소개 — 개발 도구·UI/UX·알고리즘·Punkware
 date: 2024-05-24
-excerpt: 토글 UX와 하이라이트 색 체계를 정리했습니다.
-tags: Design, UX, Theme
+excerpt: 개발 도구, UI/UX, 알고리즘, 'Punkware' 소개
+tags: Software, Tools, UI/UX, Algorithm, Punkware
 reading_minutes: 2
 ---
 
-# 주황색 하이라이트와 다크 모드 UX
+# Software 카테고리 소개
 
-웹 접근성을 고려하면 단순히 다크 모드를 켜는 것 이상이 필요합니다. 이번 테마는 다음 요소를 갖습니다.
+이 카테고리는 **개발 도구**, **UI/UX 설계**, **알고리즘**, 그리고 **'Punkware'** 철학을 중심으로 기술 노트를 공유합니다.
 
-- `prefers-color-scheme`를 감지해 초기 모드를 정합니다.
-- 사용자의 선택은 `localStorage`에 저장합니다.
-- 모든 `code`, `mark`, `::selection` 컬러는 `#ff7a18` 그라데이션을 기반으로 통합했습니다.
-- Material UI `Paper`와 `Card` 그림자를 줄여 GitHub Pages에서도 부드럽게 보입니다.
+## 다루는 주제
 
-```js
-const theme = React.useMemo(() => createTheme({
-  palette: {
-    mode,
-    primary: {
-      main: '#ff7a18',
-      contrastText: '#111'
-    },
-    background: {
-      default: mode === 'dark' ? '#0f1116' : '#f4f6fb',
-      paper: mode === 'dark' ? '#151821' : '#ffffff'
-    }
-  },
-  shape: {
-    borderRadius: 16
-  }
-}), [mode]);
-```
+| 주제 | 내용 |
+|------|------|
+| 개발 도구 | 빌드 시스템, 에디터 설정, CLI 유틸리티 등 생산성 도구 |
+| UI/UX | 다크 모드, 접근성, 컴포넌트 패턴, 색상 체계 |
+| 알고리즘 | 실용 자료구조, 문자열 처리, 최적화 기법 |
+| Punkware | 최소 의존성으로 최대 제어권 — cwist 기반 소프트웨어 철학 |
 
-모드 전환 스위치는 AppBar 우측에 배치되어 있으며, 키보드 접근성을 위해 `aria-label`과 포커스 링을 명시했습니다. 사용자는 코드 블록과 체크리스트 등 모든 Markdown 요소에서 동일한 하이라이트를 경험할 수 있습니다.
+## Punkware란?
+
+Punkware는 복잡한 프레임워크 없이 C 수준의 제어권을 유지하면서도 실용적인 애플리케이션을 만드는 접근법입니다. 필요한 것만 직접 구현하고, 불필요한 추상화 계층을 걷어내는 것이 핵심입니다. cwist 프레임워크가 그 대표 사례입니다.
+
+## 이 블로그에서의 적용
+
+이 블로그 자체가 Punkware의 산물입니다. Node.js나 Ruby 없이 순수 C(`bin/bloggen`)와 `md4c`만으로 Markdown을 HTML로 변환하고, GitHub Pages에 바로 배포합니다.

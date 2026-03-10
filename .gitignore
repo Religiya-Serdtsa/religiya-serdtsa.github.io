@@ -1,0 +1,5 @@
+# Emscripten build cache (local tooling artifact — never commit)
+.emcache/
+
+# Compiled binaries
+bin/

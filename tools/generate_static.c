@@ -59,7 +59,7 @@ static char *read_file(const char *path, size_t *out_len) {
     long len = ftell(fp);
     fseek(fp, 0, SEEK_SET);
     if (len < 0) { fclose(fp); return NULL; }
-    char *buf = (char *)malloc((size_t)len + 1);
+    char *buf = malloc((size_t)len + 1);
     if (!buf) { fclose(fp); return NULL; }
     size_t n = fread(buf, 1, (size_t)len, fp);
     fclose(fp);
@@ -240,6 +240,15 @@ static bool parse_front_matter(const char *content, size_t len,
     return false;
 }
 
+static int compare_posts(const void *a, const void *b) {
+    const blog_post_t *pa = (const blog_post_t *)a;
+    const blog_post_t *pb = (const blog_post_t *)b;
+    if (!pa->slug && !pb->slug) return 0;
+    if (!pa->slug) return 1;
+    if (!pb->slug) return -1;
+    return strcmp(pa->slug, pb->slug);
+}
+
 static bool collect_posts_for_category(blog_category_t *cat, const char *posts_root) {
     char dir_path[PATH_MAX_LEN];
     snprintf(dir_path, sizeof(dir_path), "%s/%s", posts_root, cat->id);
@@ -259,7 +268,7 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
         blog_post_t *post = &posts[count];
         memset(post, 0, sizeof(*post));
         size_t slug_len = (size_t)(dot - entry->d_name);
-        post->slug = (char *)malloc(slug_len + 1);
+        post->slug = malloc(slug_len + 1);
         memcpy(post->slug, entry->d_name, slug_len);
         post->slug[slug_len] = '\0';
         char file_path[PATH_MAX_LEN];
@@ -277,7 +286,7 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
             const char *body = content + body_offset;
             size_t elen = strlen(body);
             if (elen > MAX_EXCERPT_LEN) elen = MAX_EXCERPT_LEN;
-            char *exc = (char *)malloc(elen + 1);
+            char *exc = malloc(elen + 1);
             memcpy(exc, body, elen);
             exc[elen] = '\0';
             post->excerpt = exc;
@@ -287,6 +296,8 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
         count = new_count;
     }
     closedir(dir);
+    if (posts && count > 1)
+        qsort(posts, count, sizeof(blog_post_t), compare_posts);
     cat->posts = posts;
     cat->post_count = count;
     return true;
@@ -306,7 +317,7 @@ static void ss_fmt(cwist_sstring *ss, const char *fmt, ...) {
     int needed = vsnprintf(NULL, 0, fmt, copy);
     va_end(copy);
     if (needed <= 0) { va_end(ap); return; }
-    char *tmp = (char *)malloc((size_t)needed + 1);
+    char *tmp = malloc((size_t)needed + 1);
     if (!tmp) { va_end(ap); return; }
     vsnprintf(tmp, (size_t)needed + 1, fmt, ap);
     va_end(ap);

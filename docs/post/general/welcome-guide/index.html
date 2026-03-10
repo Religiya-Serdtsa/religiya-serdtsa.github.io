@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Welcome to the cwist Material UI Blog – Religiya Serdtsa</title>
+<title>Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내 – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
 <style>:root{--accent:#a3833f;--accent-hover:#d1bb7d;}</style>
 </head>
@@ -23,84 +23,70 @@
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/general/">General</a><span class="bc-sep">/</span><span>Welcome to the cwist Material UI Blog</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/general/">General</a><span class="bc-sep">/</span><span>Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내</span></nav>
 <header class="article-header">
 <div class="tags">
 <span class="tag">Welcome</span>
 <span class="tag">Guide</span>
 <span class="tag">Overview</span>
+<span class="tag">General</span>
 </div>
-<h1 class="article-title">Welcome to the cwist Material UI Blog</h1>
+<h1 class="article-title">Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내</h1>
 <div class="article-meta">
 <time>2024-05-25</time>
 <span class="dot">&middot;</span>
-<span>4 min read</span>
+<span>3 min read</span>
 </div>
 </header>
 <div class="divider"></div>
 <div class="article-body">
-<h1>Welcome to the cwist Material UI Blog</h1>
-<blockquote>
-<p><strong>Purpose</strong> — GitHub Pages에 올릴 수 있는 순수 정적 블로그 파이프라인(카테고리 INI + Markdown 프런트 매터 + md4c 렌더러)을 한눈에 소개합니다.</p>
-</blockquote>
-<h2>1. 플랫폼 한눈에 보기</h2>
+<h1>Religiya Serdtsa 블로그 안내</h1>
+<p><strong>General</strong> 카테고리는 블로그 전체에 걸친 <strong>공지</strong>, <strong>소개</strong>, <strong>전체 안내</strong>를 담습니다.</p>
+<h2>블로그 구조</h2>
 <table>
 <thead>
 <tr>
-<th>Layer</th>
-<th>구성 요소</th>
+<th>카테고리</th>
 <th>설명</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>카테고리 정의</td>
-<td><code>categories.cfg</code></td>
-<td>INI 형식으로 제목, 설명, accent 색상, 순서를 선언</td>
+<td>Software</td>
+<td>개발 도구, UI/UX, 알고리즘, Punkware 소개</td>
 </tr>
 <tr>
-<td>데이터</td>
-<td><code>posts/&lt;카테고리&gt;/슬러그.md</code></td>
-<td>YAML 프런트 매터(<code>title</code>, <code>date</code>, <code>tags</code>, <code>reading_minutes</code>)와 Markdown 본문</td>
+<td>Post</td>
+<td>블로그 운영 공지</td>
 </tr>
 <tr>
-<td>렌더링</td>
-<td><code>bin/bloggen</code></td>
-<td>md4c + C 기반 제너레이터가 HTML을 생성 (서버 필요 없음)</td>
+<td>General</td>
+<td>공지, 소개, 전체 블로그 안내 (이 카테고리)</td>
 </tr>
 <tr>
-<td>스타일</td>
-<td><code>assets/styles.css</code></td>
-<td>Cards/nav/타이포 등 공통 테마, 생성 시 <code>docs/assets/styles.css</code>로 복사</td>
+<td>Music</td>
+<td>음악과 문화, 펑크부터 바로크까지</td>
 </tr>
 <tr>
-<td>배포</td>
-<td>GitHub Pages Actions</td>
-<td>루트 소스로 <code>docs/</code> 산출물을 생성해 Pages에 업로드</td>
+<td>Culture</td>
+<td>세계의 좋은 취향과 문화들</td>
 </tr>
 </tbody>
 </table>
-<h2>2. 빠른 시작 순서</h2>
+<h2>기술 스택</h2>
+<p>이 블로그는 순수 C로 작성된 정적 제너레이터 <code>bin/bloggen</code>이 구동합니다.</p>
+<ul>
+<li><strong>cwist</strong>: C 프레임워크 — 문자열(<code>sstring</code>), 오류 처리 제공</li>
+<li><strong>md4c</strong>: 고속 CommonMark 파서 (C 구현)</li>
+<li><strong>GitHub Pages</strong>: 정적 HTML 서빙</li>
+</ul>
+<h2>빠른 시작</h2>
 <ol>
-<li><code>categories.cfg</code>에 카테고리 메타데이터를 추가하거나 수정합니다.</li>
-<li><code>posts/&lt;카테고리&gt;/새-슬러그.md</code>를 만들고 YAML 프런트 매터를 채운 뒤 내용을 작성합니다.</li>
-<li><code>make static-site</code>를 실행해 <code>docs/</code> 아래에 <code>index.html</code>, <code>category/&lt;id&gt;/</code>, <code>post/&lt;category&gt;/&lt;slug&gt;/</code>가 생성되는지 확인합니다. (프로젝트 페이지라면 <code>BLOG_BASE_PATH=/repo/ make static-site</code> 사용)</li>
-<li><code>docs/index.html</code>을 브라우저로 열어 결과를 검토합니다.</li>
-<li>변경 사항을 커밋하고 GitHub Pages 브랜치에 푸시합니다.</li>
+<li><code>categories.cfg</code>에 카테고리 메타데이터를 선언합니다.</li>
+<li><code>posts/&lt;카테고리&gt;/슬러그.md</code>를 YAML 프런트 매터와 함께 작성합니다.</li>
+<li><code>make static-site</code>를 실행하면 <code>docs/</code>에 완성된 HTML이 생성됩니다.</li>
+<li>커밋 후 푸시하면 GitHub Actions가 자동으로 배포합니다.</li>
 </ol>
-<h2>3. 기본 원칙</h2>
-<ul>
-<li><strong>폴더 = 카테고리</strong>: 디렉터리 이름이 URL, 네비게이션 탭, 카테고리 ID로 사용됩니다.</li>
-<li><strong>메타데이터는 파일 가까이에</strong>: 카테고리 설명/색상은 <code>categories.cfg</code>, 포스트별 정보는 각 Markdown 프런트 매터에서 유지합니다.</li>
-<li><strong>순수 정적 HTML</strong>: <code>bin/bloggen</code>이 md4c로 바로 HTML을 생성하므로 추가 서버나 런타임이 필요 없습니다. GitHub Pages만으로 운영 가능합니다.</li>
-</ul>
-<h2>4. 다음에 읽을 문서</h2>
-<ul>
-<li><a href="../../culture/contribution-workflow/">Culture</a> — 포스트 작성부터 PR까지 절차</li>
-<li><a href="../../music/emscripten-material-ui/">Music</a> — (히스토리) React + Wasm 파이프라인 정리</li>
-<li><a href="../../software/dark-mode-highlights/">Software</a> — UI/UX 하이라이트 전략</li>
-</ul>
-<p>필요하면 이 문서를 복제해 다른 카테고리의 인트로를 빠르게 만들 수 있습니다. 제목, 표준 섹션(개요/절차/원칙/다음 단계)을 유지하면 독자 경험이 일관됩니다.</p>
 </div>
 <footer class="article-footer">
 <a class="back-link" href="../../../category/general/">&larr; General로 돌아가기</a>
