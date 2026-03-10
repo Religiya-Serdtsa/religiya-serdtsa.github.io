@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Emscripten과 Material UI의 조합 – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
-<style>:root{--accent:#5b8dff;--accent-hover:#9cc0ff;}</style>
+<style>:root{--accent:#f471ff;--accent-hover:#ffb8ef;}</style>
 </head>
 <body>
 <div class="site-wrap">
@@ -13,16 +13,17 @@
 <nav class="nav">
 <a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
 <ul class="nav-list">
-<li><a href="../../../category/welcome/">Welcome</a></li>
-<li><a href="../../../category/how-to-contribute/">How to Contribute</a></li>
-<li><a class="active" href="../../../category/development/">Development</a></li>
 <li><a href="../../../category/software/">Software</a></li>
+<li><a href="../../../category/post/">Post</a></li>
+<li><a href="../../../category/general/">General</a></li>
+<li><a class="active" href="../../../category/music/">Music</a></li>
+<li><a href="../../../category/culture/">Culture</a></li>
 </ul>
 </nav>
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/development/">Development</a><span class="bc-sep">/</span><span>Emscripten과 Material UI의 조합</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/music/">Music</a><span class="bc-sep">/</span><span>Emscripten과 Material UI의 조합</span></nav>
 <header class="article-header">
 <div class="tags">
 <span class="tag">Material UI</span>
@@ -47,18 +48,18 @@
   JS --&gt; DOM[렌더링]
 </code></pre>
 <ol>
-<li>(당시 구조 기준) Material UI 앱은 <code>posts/catalog.json</code>을 먼저 읽어 카테고리와 메타데이터를 가져왔지만, 현재 버전에서는 <code>docs/categories.cfg</code>와 프런트 매터가 같은 역할을 합니다.</li>
+<li>(당시 구조 기준) Material UI 앱은 <code>posts/catalog.json</code>을 먼저 읽어 카테고리와 메타데이터를 가져왔지만, 현재 버전에서는 <code>categories.cfg</code>와 프런트 매터가 같은 역할을 합니다.</li>
 <li>사용자가 카드를 클릭하면 실제 <code>.md</code> 파일을 fetch 합니다.</li>
 <li>Emscripten으로 빌드된 cwist 런타임이 문자열을 받아 md4c로 HTML을 생성합니다.</li>
 <li>결과를 React 상태로 주입하여 안전하게 표기합니다.</li>
 </ol>
 <blockquote>
-<p><strong>Tip</strong>: 새 글을 작성할 때는 <code>docs/categories.cfg</code>에 카테고리 정보를 추가하고, 동일한 폴더에 프런트 매터가 포함된 <code>.md</code> 파일을 저장한 뒤 <code>make static-site</code>만 실행하면 됩니다.</p>
+<p><strong>Tip</strong>: 새 글을 작성할 때는 <code>categories.cfg</code>에 카테고리 정보를 추가하고, <code>posts/&lt;카테고리&gt;/</code>에 프런트 매터가 포함된 <code>.md</code> 파일을 저장한 뒤 <code>make static-site</code>만 실행하면 됩니다.</p>
 </blockquote>
 <p>Material UI 테마는 <code>createTheme</code>로 생성하며 <code>palette.primary.main</code>을 주황색으로 맞춰 baboship의 하이라이트 감성을 이어갑니다. <code>ThemeProvider</code>와 <code>CssBaseline</code>을 통해 다크/라이트 모드의 대비를 유지하면서도 가독성을 살렸습니다.</p>
 </div>
 <footer class="article-footer">
-<a class="back-link" href="../../../category/development/">&larr; Development로 돌아가기</a>
+<a class="back-link" href="../../../category/music/">&larr; Music로 돌아가기</a>
 </footer>
 </div>
 

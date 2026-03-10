@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How to Contribute – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
-<style>:root{--accent:#14c5a1;--accent-hover:#4ef8d2;}</style>
+<style>:root{--accent:#ff8a5b;--accent-hover:#ffd06e;}</style>
 </head>
 <body>
 <div class="site-wrap">
@@ -13,16 +13,17 @@
 <nav class="nav">
 <a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
 <ul class="nav-list">
-<li><a href="../../../category/welcome/">Welcome</a></li>
-<li><a class="active" href="../../../category/how-to-contribute/">How to Contribute</a></li>
-<li><a href="../../../category/development/">Development</a></li>
 <li><a href="../../../category/software/">Software</a></li>
+<li><a href="../../../category/post/">Post</a></li>
+<li><a href="../../../category/general/">General</a></li>
+<li><a href="../../../category/music/">Music</a></li>
+<li><a class="active" href="../../../category/culture/">Culture</a></li>
 </ul>
 </nav>
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/how-to-contribute/">How to Contribute</a><span class="bc-sep">/</span><span>How to Contribute</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/culture/">Culture</a><span class="bc-sep">/</span><span>How to Contribute</span></nav>
 <header class="article-header">
 <div class="tags">
 <span class="tag">Contribution</span>
@@ -44,13 +45,13 @@
 </blockquote>
 <h2>1. 준비 체크리스트</h2>
 <ul>
-<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>docs/categories.cfg</code>와 <code>docs/posts/</code> 최신 상태 확인</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>categories.cfg</code>와 <code>posts/</code> 최신 상태 확인</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled>브랜치 명명 규칙 <code>feature/&lt;slug&gt;</code> 또는 <code>fix/&lt;topic&gt;</code> 준수</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>make static-site</code>가 로컬에서 정상 동작하는지 확인</li>
 </ul>
 <h2>2. 문서 작성 단계</h2>
 <ol>
-<li><strong>카테고리 선택</strong>: 없으면 <code>docs/categories.cfg</code>에 새 섹션을 추가하고 <code>docs/posts/&lt;새카테고리&gt;/</code> 폴더를 만듭니다.</li>
+<li><strong>카테고리 선택</strong>: 없으면 <code>categories.cfg</code>에 새 섹션을 추가하고 <code>posts/&lt;새카테고리&gt;/</code> 폴더를 만듭니다.</li>
 <li><strong>Markdown 작성</strong>: 파일 상단에 YAML 프런트 매터(<code>title</code>, <code>date</code>, <code>excerpt</code>, <code>tags</code>, <code>reading_minutes</code>)를 선언하고 본문을 작성합니다.</li>
 <li><strong>자산 배치</strong>: 이미지나 추가 리소스가 있으면 같은 폴더에 저장하고, 상대 경로로 참조합니다.</li>
 <li><strong>정적 사이트 생성</strong>: <code>make static-site</code>(필요하면 <code>BLOG_BASE_PATH=/repo/ make static-site</code>)를 실행해 HTML이 재생성되는지 확인합니다.</li>
@@ -59,13 +60,13 @@
 <h2>3. 코드/테마 변경 단계</h2>
 <ol>
 <li><code>assets/styles.css</code>를 수정했다면 대비 전·후 스크린샷을 PR에 첨부합니다.</li>
-<li>카테고리 색상이나 설명을 바꿨다면 <code>docs/categories.cfg</code> diff를 꼼꼼히 검토합니다.</li>
+<li>카테고리 색상이나 설명을 바꿨다면 <code>categories.cfg</code> diff를 꼼꼼히 검토합니다.</li>
 <li>Markdown 프런트 매터 양식을 변경했다면 README 및 다른 문서에도 반영합니다.</li>
 </ol>
 <h2>4. PR 체크리스트</h2>
 <ul>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>npm</code> 의존성이 없으므로 <code>package-lock.json</code> 등은 커밋하지 않음</li>
-<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>docs/categories.cfg</code>에 누락된 항목이 없는지 확인</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>categories.cfg</code>에 누락된 항목이 없는지 확인</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled>새 카테고리/포스트가 생성된 HTML(<code>docs/category/*</code>, <code>docs/post/*</code>)까지 포함됐는지 확인</li>
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled><code>README.md</code>에 필요한 설명을 추가했는지 다시 확인</li>
 </ul>
@@ -73,12 +74,12 @@
 <ul>
 <li><code>main</code> 또는 Pages 소스 브랜치에 squash merge</li>
 <li>GitHub Pages 빌드 상태를 확인하고, 이슈에 완료 코멘트를 남깁니다.</li>
-<li>필요하다면 Welcome 카테고리에 “무엇이 바뀌었는지” 요약 포스트를 작성해 독자에게 안내합니다.</li>
+<li>필요하다면 General 카테고리에 “무엇이 바뀌었는지” 요약 포스트를 작성해 독자에게 안내합니다.</li>
 </ul>
 <p>이 워크플로를 참고하면 블로그 추가 작업이 예측 가능하고, 누구나 동일한 UX를 유지하면서 콘텐츠를 기여할 수 있습니다.</p>
 </div>
 <footer class="article-footer">
-<a class="back-link" href="../../../category/how-to-contribute/">&larr; How to Contribute로 돌아가기</a>
+<a class="back-link" href="../../../category/culture/">&larr; Culture로 돌아가기</a>
 </footer>
 </div>
 

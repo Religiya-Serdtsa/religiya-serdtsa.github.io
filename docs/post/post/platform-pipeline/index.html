@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CWIST + WASM 블로그 파이프라인 – Religiya Serdtsa</title>
 <link rel="stylesheet" href="../../../assets/styles.css">
-<style>:root{--accent:#5b8dff;--accent-hover:#9cc0ff;}</style>
+<style>:root{--accent:#14c5a1;--accent-hover:#4ef8d2;}</style>
 </head>
 <body>
 <div class="site-wrap">
@@ -13,16 +13,17 @@
 <nav class="nav">
 <a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
 <ul class="nav-list">
-<li><a href="../../../category/welcome/">Welcome</a></li>
-<li><a href="../../../category/how-to-contribute/">How to Contribute</a></li>
-<li><a class="active" href="../../../category/development/">Development</a></li>
 <li><a href="../../../category/software/">Software</a></li>
+<li><a class="active" href="../../../category/post/">Post</a></li>
+<li><a href="../../../category/general/">General</a></li>
+<li><a href="../../../category/music/">Music</a></li>
+<li><a href="../../../category/culture/">Culture</a></li>
 </ul>
 </nav>
 </header>
 <main class="main">
 <div class="article-wrap">
-<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/development/">Development</a><span class="bc-sep">/</span><span>CWIST + WASM 블로그 파이프라인</span></nav>
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/post/">Post</a><span class="bc-sep">/</span><span>CWIST + WASM 블로그 파이프라인</span></nav>
 <header class="article-header">
 <div class="tags">
 <span class="tag">CWIST</span>
@@ -46,7 +47,7 @@
 <li>md4c를 함께 빌드해 GitHub 호환 문법과 테이블, 체크리스트, 수학 스팬을 지원합니다.</li>
 </ul>
 <h2>깃허브 블로그에 최적화</h2>
-<p>모든 포스트는 <code>docs/posts/&lt;카테고리&gt;/*.md</code>에 저장되며, 헤더에 노출되는 카테고리 역시 폴더 구조를 따릅니다. <code>docs/categories.cfg</code>에서 각 폴더의 메타데이터(제목, 설명, 강조 색상, 순서)를 정의하고 Git push만으로 배포하면 됩니다. 필요한 경우 YAML 프런트 매터를 포함하면 정적 제너레이터가 자동으로 HTML을 갱신합니다.</p>
+<p>모든 포스트는 <code>posts/&lt;카테고리&gt;/*.md</code>에 저장되며, 헤더에 노출되는 카테고리 역시 폴더 구조를 따릅니다. <code>categories.cfg</code>에서 각 폴더의 메타데이터(제목, 설명, 강조 색상, 순서)를 정의하고 GitHub Actions가 <code>docs/</code> 산출물을 배포합니다. 필요한 경우 YAML 프런트 매터를 포함하면 정적 제너레이터가 자동으로 HTML을 갱신합니다.</p>
 <h2>한눈에 보는 특징</h2>
 <ol>
 <li><strong>DB 없이도</strong> 파일만으로 컨텐츠를 관리</li>
@@ -57,7 +58,7 @@
 <p>필요하면 이 포스트를 복제해 새로운 슬러그 이름으로 저장하면 됩니다. 파일만 추가하면 바로 블로그가 새 섹션을 감지합니다.</p>
 </div>
 <footer class="article-footer">
-<a class="back-link" href="../../../category/development/">&larr; Development로 돌아가기</a>
+<a class="back-link" href="../../../category/post/">&larr; Post로 돌아가기</a>
 </footer>
 </div>
 

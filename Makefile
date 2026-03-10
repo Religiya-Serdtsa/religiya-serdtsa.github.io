@@ -21,11 +21,13 @@ STATIC_INCLUDES := \
 .PHONY: static-site clean
 
 static-site: $(STATIC_GENERATOR)
-	./$(STATIC_GENERATOR) docs/categories.cfg docs/posts assets/styles.css docs
+	rm -rf docs
+	./$(STATIC_GENERATOR) categories.cfg posts assets/styles.css docs
+	touch docs/.nojekyll
 
 $(STATIC_GENERATOR): $(STATIC_SRCS)
 	@mkdir -p $(@D)
 	$(CC) -std=c17 -O2 $(STATIC_SRCS) $(STATIC_INCLUDES) -o $@
 
 clean:
-	rm -rf bin docs/category docs/post docs/assets
+	rm -rf bin docs
