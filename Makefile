@@ -4,6 +4,7 @@ EMCC ?= emcc
 STATIC_GENERATOR := bin/bloggen
 STATIC_SRCS := \
 	tools/generate_static.c \
+	tools/scheduler.c \
 	lib/cwist/src/sys/err/error.c \
 	lib/cwist/src/core/sstring/sstring.c \
 	blog/wasm/cwist_alloc_stub.c \

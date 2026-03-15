@@ -20,9 +20,31 @@
 
   if (!inputEl || !resultsEl) return;
 
-  var index   = null;   /* Array<{title,url,summary,tags,date,body}> */
+  var index   = null;   /* Array<{title,url,summary,tags,date,body,...}> */
   var wasmMod = null;   /* CwistSearchModule instance, or null  */
   var cursor  = -1;     /* keyboard-navigation index            */
+  var renderTimer = null;
+  var DEBOUNCE_MS = 120;
+
+  function prepareIndex(data) {
+    if (!Array.isArray(data)) return [];
+    return data.map(function (item) {
+      var normalized = Object.assign({}, item);
+      var tags = Array.isArray(item.tags) ? item.tags.slice() : [];
+      normalized.title   = item.title   || '';
+      normalized.url     = item.url     || '';
+      normalized.summary = item.summary || '';
+      normalized.tags    = tags;
+      normalized.date    = item.date    || '';
+      normalized.body    = item.body    || '';
+      normalized._tagsStr = tags.join(' ');
+      normalized._lcTitle   = normalized.title.toLowerCase();
+      normalized._lcSummary = normalized.summary.toLowerCase();
+      normalized._lcBody    = normalized.body.toLowerCase();
+      normalized._lcTags    = normalized._tagsStr.toLowerCase();
+      return normalized;
+    });
+  }
 
   /* ── Initialise: load WASM, then the search index ────── */
   function init() {
@@ -41,9 +63,10 @@
         return r.json();
       })
       .then(function (data) {
-        index = Array.isArray(data) ? data : [];
+        index = prepareIndex(data);
         inputEl.disabled = false;
         inputEl.focus();
+        render(inputEl.value);
       })
       .catch(function (e) {
         console.error('[cwist-search] init error:', e);
@@ -73,7 +96,7 @@
 
   /* ── Score a single post ──────────────────────────────── */
   function scorePost(post, query) {
-    var tagsStr = (post.tags || []).join(' ');
+    var tagsStr = post._tagsStr || (post.tags || []).join(' ');
     if (wasmMod) {
       return wasmMod.ccall(
         'cwist_score', 'number',
@@ -84,16 +107,17 @@
     /* Pure-JS fallback (case-insensitive indexOf) */
     var q = query.toLowerCase();
     var s = 0;
-    if ((post.title   || '').toLowerCase().indexOf(q) !== -1) s += 3;
-    if (tagsStr.toLowerCase().indexOf(q)               !== -1) s += 2;
-    if ((post.summary || '').toLowerCase().indexOf(q)  !== -1) s += 1;
-    if ((post.body    || '').toLowerCase().indexOf(q)  !== -1) s += 1;
+    if ((post._lcTitle   || '').indexOf(q) !== -1) s += 3;
+    if ((post._lcTags    || '').indexOf(q) !== -1) s += 2;
+    if ((post._lcSummary || '').indexOf(q) !== -1) s += 1;
+    if ((post._lcBody    || '').indexOf(q) !== -1) s += 1;
     return s;
   }
 
   /* ── Render results for a query ───────────────────────── */
   function render(query) {
-    var q = query.trim();
+    var raw = (query == null) ? '' : String(query);
+    var q = raw.trim();
     if (!q || !index) {
       resultsEl.innerHTML = '';
       if (noResultEl) noResultEl.hidden = true;
@@ -136,9 +160,15 @@
   }
 
   /* ── Input handler ────────────────────────────────────── */
-  inputEl.addEventListener('input', function () {
-    render(inputEl.value);
-  });
+  function requestRender() {
+    if (renderTimer) clearTimeout(renderTimer);
+    renderTimer = setTimeout(function () {
+      renderTimer = null;
+      render(inputEl.value);
+    }, DEBOUNCE_MS);
+  }
+
+  inputEl.addEventListener('input', requestRender);
 
   /* ── Keyboard navigation (↑ ↓ Enter) ─────────────────── */
   inputEl.addEventListener('keydown', function (e) {
