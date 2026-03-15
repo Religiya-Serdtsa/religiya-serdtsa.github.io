@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>블로그 운영 공지 – Religiya Serdtsa</title>
+<link rel="stylesheet" href="../../../assets/styles.css">
+<style>:root{--accent:#a84a43;--accent-hover:#cf8a7e;}</style>
+</head>
+<body>
+<div class="site-wrap">
+<header class="site-header">
+<nav class="nav">
+<a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
+<ul class="nav-list">
+<li><a href="../../../category/software/">Software</a></li>
+<li><a class="active" href="../../../category/post/">Post</a></li>
+<li><a href="../../../category/general/">General</a></li>
+<li><a href="../../../category/music/">Music</a></li>
+<li><a href="../../../category/culture/">Culture</a></li>
+<li><a href="../../../search/">검색</a></li>
+</ul>
+</nav>
+</header>
+<main class="main">
+<div class="article-wrap">
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/post/">Post</a><span class="bc-sep">/</span><span>블로그 운영 공지</span></nav>
+<header class="article-header">
+<div class="tags">
+<span class="tag">Notice</span>
+<span class="tag">Operations</span>
+<span class="tag">Blog</span>
+</div>
+<h1 class="article-title">블로그 운영 공지</h1>
+<div class="article-meta">
+<time>2026-03-10</time>
+<span class="dot">&middot;</span>
+<span>2 min read</span>
+</div>
+</header>
+<div class="divider"></div>
+<div class="article-body">
+<h1>블로그 운영 공지</h1>
+<p>이 카테고리는 <strong>Religiya Serdtsa</strong> 블로그 운영과 관련된 공지 사항을 모아 둡니다.</p>
+<h2>공지 유형</h2>
+<ul>
+<li><strong>플랫폼 변경</strong>: 제너레이터 업그레이드, 빌드 방식 변경, 의존성 갱신</li>
+<li><strong>구조 개편</strong>: 카테고리 추가·삭제, URL 변경, 포스트 이동</li>
+<li><strong>정책 안내</strong>: 기여 방법, 포스트 작성 규칙, 태그 사용 기준</li>
+</ul>
+<h2>현재 플랫폼</h2>
+<p>이 블로그는 <code>bin/bloggen</code> — cwist sstring + md4c 기반 C 정적 제너레이터로 구동됩니다. GitHub Actions가 <code>posts/</code> 디렉터리와 <code>categories.cfg</code>를 읽어 <code>docs/</code>에 HTML을 생성하고, GitHub Pages가 서빙합니다.</p>
+<p>변경 사항이 생기면 이 카테고리에 공지합니다.</p>
+</div>
+<footer class="article-footer">
+<a class="back-link" href="../../../category/post/">&larr; Post로 돌아가기</a>
+</footer>
+<section class="comment-section" id="comment-section" data-slug="post/about">
+<h2 class="comment-section-title" id="comment-section-title"></h2>
+<div id="comment-count" class="comment-count"></div>
+<div id="comment-list" class="comment-list"></div>
+<div class="comment-form">
+<h3 id="comment-form-title" class="comment-form-title"></h3>
+<p id="comment-form-note" class="comment-form-note"></p>
+<textarea id="comment-body" class="comment-textarea" rows="4"></textarea>
+<button id="comment-submit" class="comment-submit" type="button"></button>
+</div>
+</section>
+<script src="../../../assets/comments.js"></script>
+</div>
+
+</main>
+<footer class="site-footer">
+<p>Built with <a href="https://github.com/gg582/cwist">cwist</a> + md4c &middot; GitHub Pages</p>
+</footer>
+</div>
+</body>
+</html>
