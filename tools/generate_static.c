@@ -10,16 +10,19 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
+#include <pthread.h>
 
 #include <cwist/core/sstring/sstring.h>
 #include <md4c-html.h>
+
+#include "scheduler.h"
 
 #define PATH_MAX_LEN    4096
 #define MAX_EXCERPT_LEN 200
 
 /* ── Data model ─────────────────────────────────────────────────────────── */
 
-typedef struct {
+typedef struct blog_post_t {
     char *slug;
     char *title;
     char *date;
@@ -31,7 +34,7 @@ typedef struct {
     char *source_path;
 } blog_post_t;
 
-typedef struct {
+typedef struct blog_category_t {
     char *id;
     char *title;
     char *description;
@@ -42,7 +45,7 @@ typedef struct {
     size_t post_count;
 } blog_category_t;
 
-typedef struct {
+typedef struct blog_catalog_t {
     blog_category_t *items;
     size_t count;
 } blog_catalog_t;
@@ -94,16 +97,25 @@ static bool ensure_parents(const char *filepath) {
 }
 
 static bool write_file(const char *path, const char *content) {
+    static pthread_mutex_t fs_lock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&fs_lock);
+    bool ok = false;
     if (!ensure_parents(path)) {
         fprintf(stderr, "[bloggen] cannot create directories for %s\n", path);
-        return false;
+        goto out;
     }
     FILE *fp = fopen(path, "wb");
-    if (!fp) { fprintf(stderr, "[bloggen] cannot write %s\n", path); return false; }
+    if (!fp) {
+        fprintf(stderr, "[bloggen] cannot write %s\n", path);
+        goto out;
+    }
     size_t len = content ? strlen(content) : 0;
     if (len > 0) fwrite(content, 1, len, fp);
     fclose(fp);
-    return true;
+    ok = true;
+out:
+    pthread_mutex_unlock(&fs_lock);
+    return ok;
 }
 
 static char *trim(char *str) {
@@ -259,6 +271,7 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
     size_t count = 0;
     blog_post_t *posts = NULL;
     while ((entry = readdir(dir))) {
+        // TODO: Parallelise per-file parsing to avoid serial disk I/O on huge post directories.
         if (entry->d_name[0] == '.') continue;
         const char *dot = strrchr(entry->d_name, '.');
         if (!dot || strcmp(dot, ".md") != 0) continue;
@@ -292,6 +305,7 @@ static bool collect_posts_for_category(blog_category_t *cat, const char *posts_r
             exc[elen] = '\0';
             post->excerpt = exc;
         }
+        // TODO: Avoid duplicating every post body in memory; stream from disk when building indexes.
         post->body = strdup_safe(body_ptr);
         post->source_path = strdup_safe(file_path);
         free(content);
@@ -335,6 +349,7 @@ static void md_callback(const MD_CHAR *text, MD_SIZE size, void *userdata) {
 
 static bool render_markdown(const char *path, cwist_sstring *out) {
     size_t len = 0;
+    // TODO: Stream very large markdown files instead of loading entire file into memory.
     char *content = read_file(path, &len);
     if (!content) { fprintf(stderr, "[bloggen] failed to read markdown %s\n", path); return false; }
 
@@ -631,6 +646,7 @@ static void build_post_page(blog_catalog_t *catalog, blog_category_t *cat,
     const char *root = "../../../";
 
     if (!render_markdown(post->source_path, md_out)) {
+        // TODO: Cache md4c output so unchanged posts don't get re-parsed each build.
         fprintf(stderr, "[bloggen] failed to render %s\n", post->source_path);
         goto cleanup;
     }
@@ -779,6 +795,7 @@ static void append_json_string(cwist_sstring *out, const char *s) {
  * Each entry: { title, url, summary, tags, date, body }
  */
 static void build_search_index(blog_catalog_t *catalog, const char *out_dir) {
+    // TODO: Stream JSON directly to disk to sidestep building massive strings for large catalogs.
     cwist_sstring *json = cwist_sstring_create();
     cwist_sstring_append(json, "[\n");
     bool first = true;
@@ -879,6 +896,43 @@ static void copy_assets(const char *src_css, const char *out_dir) {
     fclose(src); fclose(dst);
 }
 
+/* ── Scheduler bindings ─────────────────────────────────────────────────── */
+
+static size_t blog_contract_get_category_count(const blog_catalog_t *catalog) {
+    return catalog ? catalog->count : 0;
+}
+
+static size_t blog_contract_get_post_count(const blog_catalog_t *catalog, size_t category_index) {
+    if (!catalog || category_index >= catalog->count) return 0;
+    return catalog->items[category_index].post_count;
+}
+
+static void blog_contract_build_category(blog_catalog_t *catalog, size_t category_index,
+                                         const char *out_dir) {
+    if (!catalog || category_index >= catalog->count) return;
+    blog_category_t *cat = &catalog->items[category_index];
+    if (!cat->id) return;
+    build_category_page(catalog, cat, out_dir);
+}
+
+static void blog_contract_build_post(blog_catalog_t *catalog, size_t category_index,
+                                     size_t post_index, const char *out_dir) {
+    if (!catalog || category_index >= catalog->count) return;
+    blog_category_t *cat = &catalog->items[category_index];
+    if (post_index >= cat->post_count || !cat->id) return;
+    build_post_page(catalog, cat, &cat->posts[post_index], out_dir);
+}
+
+static const blog_scheduler_contract_t BLOG_SCHEDULER_CONTRACT = {
+    .get_category_count = blog_contract_get_category_count,
+    .get_post_count = blog_contract_get_post_count,
+    .build_home = build_home,
+    .build_category = blog_contract_build_category,
+    .build_post = blog_contract_build_post,
+    .build_search_index = build_search_index,
+    .build_search_page = build_search_page,
+};
+
 /* ── main ───────────────────────────────────────────────────────────────── */
 
 int main(int argc, char **argv) {
@@ -905,16 +959,11 @@ int main(int argc, char **argv) {
     }
 
     copy_assets(assets_css, out_dir);
-    build_home(&catalog, out_dir);
-    for (size_t i = 0; i < catalog.count; ++i) {
-        blog_category_t *cat = &catalog.items[i];
-        if (!cat->id) continue;
-        build_category_page(&catalog, cat, out_dir);
-        for (size_t j = 0; j < cat->post_count; ++j)
-            build_post_page(&catalog, cat, &cat->posts[j], out_dir);
+    if (blog_scheduler_dispatch(&catalog, out_dir, &BLOG_SCHEDULER_CONTRACT) != 0) {
+        fprintf(stderr, "[bloggen] scheduler dispatch failed\n");
+        free_catalog(&catalog);
+        return 1;
     }
-    build_search_index(&catalog, out_dir);
-    build_search_page(&catalog, out_dir);
 
     free_catalog(&catalog);
     return 0;

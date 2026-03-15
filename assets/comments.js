@@ -36,13 +36,69 @@
   if (submitBtn) submitBtn.textContent = i18n.submitLabel;
   if (countEl)   countEl.textContent   = i18n.loading;
 
-  /* ── HTML escaping ─────────────────────────────────────── */
-  function esc(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  /* ── HTML helpers ─────────────────────────────────────── */
+  function appendTextSegment(container, str) {
+    if (!container || str === undefined || str === null || str === '') return;
+    var parts = String(str).split(/\r\n|\r|\n/);
+    for (var i = 0; i < parts.length; i++) {
+      container.appendChild(document.createTextNode(parts[i]));
+      if (i !== parts.length - 1) container.appendChild(document.createElement('br'));
+    }
+  }
+
+  function sanitizeUrl(input) {
+    var url = String(input || '').trim();
+    if (!url) return '';
+    if (/^(?:https?:)?\/\//i.test(url)) return url;
+    if (/^[a-z][a-z0-9+\-.]*:/i.test(url)) {
+      return /^https?:/i.test(url) ? url : '';
+    }
+    if (url[0] === '/' || url[0] === '.') return url;
+    if (url.indexOf(':') === -1) return url;
+    return '';
+  }
+
+  var IMG_SYNTAX = /!\[([^\]]*)\]\(([^)]+)\)/g;
+
+  function createImageFigure(url, alt) {
+    var figure = document.createElement('figure');
+    figure.className = 'comment-image';
+    var img = document.createElement('img');
+    img.src = url;
+    img.alt = alt;
+    figure.appendChild(img);
+    if (alt) {
+      var caption = document.createElement('figcaption');
+      caption.textContent = alt;
+      figure.appendChild(caption);
+    }
+    return figure;
+  }
+
+  function renderCommentBody(container, body) {
+    if (!container) return;
+    container.textContent = '';
+    if (!body) return;
+    var text = String(body);
+    var lastIndex = 0;
+    var match;
+    IMG_SYNTAX.lastIndex = 0;
+    while ((match = IMG_SYNTAX.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        appendTextSegment(container, text.slice(lastIndex, match.index));
+      }
+      var alt = match[1] || '';
+      var url = sanitizeUrl(match[2]);
+      if (url) {
+        container.appendChild(createImageFigure(url, alt));
+      } else {
+        appendTextSegment(container, match[0]);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      appendTextSegment(container, text.slice(lastIndex));
+    }
   }
 
   /* ── Load & render comments ────────────────────────────── */
@@ -57,27 +113,51 @@
         countEl.textContent = list.length ? i18n.count(list.length) : '';
       }
       if (!listEl) return;
+      listEl.innerHTML = '';
       if (!list.length) {
-        listEl.innerHTML = '<p class="no-comments">' + esc(i18n.empty) + '</p>';
+        var emptyEl = document.createElement('p');
+        emptyEl.className = 'no-comments';
+        emptyEl.textContent = i18n.empty;
+        listEl.appendChild(emptyEl);
         return;
       }
-      listEl.innerHTML = list.map(function (c) {
+      var fragment = document.createDocumentFragment();
+      list.forEach(function (c) {
+        var commentEl = document.createElement('div');
+        commentEl.className = 'comment';
+
+        var metaEl = document.createElement('div');
+        metaEl.className = 'comment-meta';
+        var authorEl = document.createElement('span');
+        authorEl.className = 'comment-author';
+        authorEl.textContent = c.author || 'Anonymous';
+        metaEl.appendChild(authorEl);
         var date = c.created_at ? c.created_at.slice(0, 10) : '';
-        return (
-          '<div class="comment">' +
-            '<div class="comment-meta">' +
-              '<span class="comment-author">' + esc(c.author) + '</span>' +
-              (date ? '<span class="comment-date">' + esc(date) + '</span>' : '') +
-            '</div>' +
-            '<div class="comment-body">' + esc(c.body) + '</div>' +
-          '</div>'
-        );
-      }).join('');
+        if (date) {
+          var dateEl = document.createElement('span');
+          dateEl.className = 'comment-date';
+          dateEl.textContent = date;
+          metaEl.appendChild(dateEl);
+        }
+        commentEl.appendChild(metaEl);
+
+        var bodyEl = document.createElement('div');
+        bodyEl.className = 'comment-body';
+        renderCommentBody(bodyEl, c.body);
+        commentEl.appendChild(bodyEl);
+
+        fragment.appendChild(commentEl);
+      });
+      listEl.appendChild(fragment);
     })
     .catch(function () {
       if (countEl) countEl.textContent = '';
       if (listEl) {
-        listEl.innerHTML = '<p class="no-comments">' + esc(i18n.error) + '</p>';
+        listEl.innerHTML = '';
+        var errorEl = document.createElement('p');
+        errorEl.className = 'no-comments';
+        errorEl.textContent = i18n.error;
+        listEl.appendChild(errorEl);
       }
     });
 
