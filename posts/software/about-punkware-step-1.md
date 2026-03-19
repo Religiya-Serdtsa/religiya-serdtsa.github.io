@@ -1,6 +1,6 @@
 ---
 title: Punkware - 어떤 컨셉트인가요?
-date: 2026-06-10
+date: 2026-03-10
 excerpt: 개발과 펑크 정신, 그리고 최소 구현체
 tags: Software, Tools, UI/UX, Algorithm, Punkware
 reading_minutes: 2

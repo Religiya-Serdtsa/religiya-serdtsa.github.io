@@ -1,6 +1,6 @@
 ---
 title: Software 카테고리 소개 — 개발 도구·UI/UX·알고리즘·Punkware
-date: 2026-06-10
+date: 2026-03-10
 excerpt: 개발 도구, UI/UX, 알고리즘, 'Punkware' 소개
 tags: Software, Tools, UI/UX, Algorithm, Punkware
 reading_minutes: 2
