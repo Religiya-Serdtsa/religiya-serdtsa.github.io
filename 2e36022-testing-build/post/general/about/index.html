@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내 – Religiya Serdtsa</title>
+<link rel="stylesheet" href="../../../assets/styles.css">
+<style>:root{--accent:#a3833f;--accent-hover:#d1bb7d;}</style>
+</head>
+<body>
+<div class="site-wrap">
+<header class="site-header">
+<nav class="nav">
+<a class="brand" href="../../../"><span class="brand-hex">&#x2B21;</span><span>Religiya Serdtsa</span></a>
+<ul class="nav-list">
+<li><a href="../../../category/software/">Software</a></li>
+<li><a href="../../../category/post/">Post</a></li>
+<li><a class="active" href="../../../category/general/">General</a></li>
+<li><a href="../../../category/music/">Music</a></li>
+<li><a href="../../../category/culture/">Culture</a></li>
+<li><a href="../../../search/">검색</a></li>
+</ul>
+</nav>
+</header>
+<main class="main">
+<div class="article-wrap">
+<nav class="breadcrumb"><a href="../../../">홈</a><span class="bc-sep">/</span><a href="../../../category/general/">General</a><span class="bc-sep">/</span><span>Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내</span></nav>
+<header class="article-header">
+<div class="tags">
+<span class="tag">Welcome</span>
+<span class="tag">Guide</span>
+<span class="tag">Overview</span>
+<span class="tag">General</span>
+</div>
+<h1 class="article-title">Religiya Serdtsa 블로그 안내 — 공지, 소개, 전체 안내</h1>
+<div class="article-meta">
+<time>2026-03-10</time>
+<span class="dot">&middot;</span>
+<span>3 min read</span>
+</div>
+</header>
+<div class="divider"></div>
+<div class="article-body">
+<h1>Religiya Serdtsa 블로그 안내</h1>
+<p><strong>General</strong> 카테고리는 블로그 전체에 걸친 <strong>공지</strong>, <strong>소개</strong>, <strong>전체 안내</strong>를 담습니다.</p>
+<h2>블로그 구조</h2>
+<table>
+<thead>
+<tr>
+<th>카테고리</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Software</td>
+<td>개발 도구, UI/UX, 알고리즘, Punkware 소개</td>
+</tr>
+<tr>
+<td>Post</td>
+<td>블로그 운영 공지</td>
+</tr>
+<tr>
+<td>General</td>
+<td>공지, 소개, 전체 블로그 안내 (이 카테고리)</td>
+</tr>
+<tr>
+<td>Music</td>
+<td>음악과 문화, 펑크부터 바로크까지</td>
+</tr>
+<tr>
+<td>Culture</td>
+<td>세계의 좋은 취향과 문화들</td>
+</tr>
+</tbody>
+</table>
+<h2>기술 스택</h2>
+<p>이 블로그는 순수 C로 작성된 정적 제너레이터 <code>bin/bloggen</code>이 구동합니다.</p>
+<ul>
+<li><strong>cwist</strong>: C 프레임워크 — 문자열(<code>sstring</code>), 오류 처리 제공</li>
+<li><strong>md4c</strong>: 고속 CommonMark 파서 (C 구현)</li>
+<li><strong>GitHub Pages</strong>: 정적 HTML 서빙</li>
+</ul>
+<h2>빠른 시작</h2>
+<ol>
+<li><code>categories.cfg</code>에 카테고리 메타데이터를 선언합니다.</li>
+<li><code>posts/&lt;카테고리&gt;/슬러그.md</code>를 YAML 프런트 매터와 함께 작성합니다.</li>
+<li><code>make static-site</code>를 실행하면 <code>docs/</code>에 완성된 HTML이 생성됩니다.</li>
+<li>커밋 후 푸시하면 GitHub Actions가 자동으로 배포합니다.</li>
+</ol>
+</div>
+<footer class="article-footer">
+<a class="back-link" href="../../../category/general/">&larr; General로 돌아가기</a>
+</footer>
+<section class="comment-section" id="comment-section" data-slug="general/about">
+<h2 class="comment-section-title" id="comment-section-title"></h2>
+<div id="comment-count" class="comment-count"></div>
+<div id="comment-list" class="comment-list"></div>
+<div class="comment-form">
+<h3 id="comment-form-title" class="comment-form-title"></h3>
+<p id="comment-form-note" class="comment-form-note"></p>
+<textarea id="comment-body" class="comment-textarea" rows="4"></textarea>
+<button id="comment-submit" class="comment-submit" type="button"></button>
+</div>
+</section>
+<script src="../../../assets/comments.js"></script>
+</div>
+
+</main>
+<footer class="site-footer">
+<p>Built with <a href="https://github.com/gg582/cwist">cwist</a> + md4c &middot; GitHub Pages</p>
+</footer>
+</div>
+</body>
+</html>
