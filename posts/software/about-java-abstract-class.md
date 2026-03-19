@@ -1,7 +1,7 @@
 ---
-title: 자바의 추상 클래스는 유지 보수 비용을 늘린다
+title: 자바의 추상 클래스는 때로 유지 보수 비용을 늘린다
 date: 2026-03-19
-excerpt: 자바에서 추상 클래스가 왜 별로인가?
+excerpt: 자바에서 추상 클래스가 불러오는 부작용
 tags: Software, Tools, UI/UX, Algorithm, Java
 reading_minutes: 2
 ---
