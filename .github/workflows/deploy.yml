@@ -21,24 +21,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout gh-pages
         uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Set up Emscripten SDK
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: '3.1.74'
-          actions-cache-folder: '.emsdk-cache'
-
-      - name: Build WASM search module
-        run: make wasm-search
-
-      - name: Generate static site from root posts
-        run: make clean static-site
+          ref: gh-pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
